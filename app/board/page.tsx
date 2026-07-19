@@ -47,7 +47,7 @@ export default async function BoardPage() {
         </p>
       )}
 
-      <ul className="space-y-3">
+      <ul className="grid gap-3 sm:grid-cols-2">
         {posts?.map((post) => (
           <li key={post.id}>
             <Link

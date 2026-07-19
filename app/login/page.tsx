@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { usernameToEmail } from '@/lib/auth'
@@ -35,15 +36,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="max-w-sm mx-auto px-6 py-16">
-      <div className="text-center mb-8">
-        <p className="text-2xl mb-1">🍚</p>
-        <h1 className="font-serif text-2xl font-bold tracking-tight">로그인</h1>
-      </div>
-      <form
-        onSubmit={handleLogin}
-        className="space-y-4 rounded-2xl border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(36,26,16,0.04)]"
-      >
+    <div className="max-w-sm mx-auto px-6 py-20">
+      <h1 className="font-serif text-3xl font-bold tracking-tight mb-1.5">다시 오셨네요</h1>
+      <p className="text-sm text-muted-foreground mb-9">도봉학사 계정으로 로그인하세요</p>
+      <form onSubmit={handleLogin} className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-1.5">아이디</label>
           <input
@@ -73,6 +69,12 @@ export default function LoginPage() {
           {loading ? '로그인 중...' : '로그인'}
         </button>
       </form>
+      <p className="mt-7 text-sm text-muted-foreground">
+        계정이 없으신가요?{' '}
+        <Link href="/signup" className="text-primary font-medium hover:text-primary-hover transition-colors">
+          회원가입
+        </Link>
+      </p>
     </div>
   )
 }

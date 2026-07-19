@@ -63,12 +63,22 @@ export default async function Home() {
       )}
 
       <div className="space-y-5">
-        {sortedMeals.map((meal) => (
+        {sortedMeals.map((meal, idx) => (
           <div
             key={meal.id}
-            className="rounded-2xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(36,26,16,0.04)] transition-shadow hover:shadow-[0_4px_16px_rgba(36,26,16,0.06)]"
+            className={
+              idx === 0
+                ? 'rounded-2xl border border-accent-soft-border bg-accent-soft/40 p-6 shadow-[0_1px_2px_rgba(36,26,16,0.04)] transition-shadow hover:shadow-[0_4px_16px_rgba(36,26,16,0.06)]'
+                : 'rounded-2xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(36,26,16,0.04)] transition-shadow hover:shadow-[0_4px_16px_rgba(36,26,16,0.06)]'
+            }
           >
-            <h2 className="font-serif text-lg font-bold mb-3.5 flex items-center gap-2">
+            <h2
+              className={
+                idx === 0
+                  ? 'font-serif text-xl font-bold mb-3.5 flex items-center gap-2'
+                  : 'font-serif text-lg font-bold mb-3.5 flex items-center gap-2'
+              }
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-primary" aria-hidden />
               {MEAL_TYPE_LABEL[meal.meal_type] ?? meal.meal_type}
             </h2>

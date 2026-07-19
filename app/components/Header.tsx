@@ -53,40 +53,40 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-surface/90 backdrop-blur supports-[backdrop-filter]:bg-surface/75">
       <div className="max-w-5xl mx-auto px-5 sm:px-6 py-3.5 flex justify-between items-center gap-4">
-        <Link
-          href="/"
-          className="font-serif text-xl font-bold tracking-tight text-primary shrink-0"
-        >
-          🍚 DormEats
+        <Link href="/" className="flex items-baseline gap-2 shrink-0">
+          <span className="font-serif text-xl font-bold tracking-tight text-primary">
+            🍚 DormEats
+          </span>
+          <span className="hidden sm:inline text-xs text-muted-foreground">도봉학사</span>
         </Link>
-        <nav className="flex items-center gap-1 text-sm">
+        <nav className="flex items-center gap-4 text-sm">
           <Link
             href="/week"
-            className="px-3 py-2 rounded-full font-medium text-foreground/70 hover:text-foreground hover:bg-surface-hover transition-colors"
+            className="relative py-2 font-medium text-foreground/70 hover:text-foreground transition-colors after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:origin-left after:scale-x-0 after:bg-primary after:transition-transform hover:after:scale-x-100"
           >
             주간식단
           </Link>
           <Link
             href="/board"
-            className="px-3 py-2 rounded-full font-medium text-foreground/70 hover:text-foreground hover:bg-surface-hover transition-colors"
+            className="relative py-2 font-medium text-foreground/70 hover:text-foreground transition-colors after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:origin-left after:scale-x-0 after:bg-primary after:transition-transform hover:after:scale-x-100"
           >
             희망메뉴
           </Link>
           <Link
             href="/free-board"
-            className="px-3 py-2 rounded-full font-medium text-foreground/70 hover:text-foreground hover:bg-surface-hover transition-colors"
+            className="relative py-2 font-medium text-foreground/70 hover:text-foreground transition-colors after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:origin-left after:scale-x-0 after:bg-primary after:transition-transform hover:after:scale-x-100"
           >
             자유게시판
           </Link>
 
-          <span className="w-px h-5 bg-border mx-2" aria-hidden />
+          <span className="w-px h-5 bg-border" aria-hidden />
 
           {loading ? null : nickname ? (
             <>
               <NotificationBell />
               <Link
                 href="/mypage"
-                className="px-3 py-2 rounded-full font-medium text-foreground/70 hover:text-foreground hover:bg-surface-hover transition-colors"
+                className="relative py-2 font-medium text-foreground/70 hover:text-foreground transition-colors after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:origin-left after:scale-x-0 after:bg-primary after:transition-transform hover:after:scale-x-100"
               >
                 마이페이지
               </Link>
@@ -95,7 +95,7 @@ export default function Header() {
               </span>
               <button
                 onClick={handleLogout}
-                className="px-3 py-2 text-muted-foreground hover:text-foreground transition-colors"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 로그아웃
               </button>
@@ -104,7 +104,7 @@ export default function Header() {
             <>
               <Link
                 href="/login"
-                className="px-3 py-2 rounded-full font-medium text-foreground/70 hover:text-foreground hover:bg-surface-hover transition-colors"
+                className="relative py-2 font-medium text-foreground/70 hover:text-foreground transition-colors after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:origin-left after:scale-x-0 after:bg-primary after:transition-transform hover:after:scale-x-100"
               >
                 로그인
               </Link>

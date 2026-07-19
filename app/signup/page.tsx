@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { usernameToEmail } from '@/lib/auth'
@@ -49,9 +50,12 @@ export default function SignupPage() {
 
   return (
     <div className="max-w-sm mx-auto px-6 py-16">
-      <div className="text-center mb-8">
-        <p className="text-2xl mb-1">🍚</p>
+      <div className="mb-8">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft border border-accent-soft-border px-3 py-1 text-xs font-semibold text-primary-hover mb-4">
+          🍚 도봉학사 식단 커뮤니티
+        </span>
         <h1 className="font-serif text-2xl font-bold tracking-tight">회원가입</h1>
+        <p className="text-sm text-muted-foreground mt-1">몇 가지 정보만 입력하면 바로 시작할 수 있어요</p>
       </div>
       <form
         onSubmit={handleSignup}
@@ -99,6 +103,12 @@ export default function SignupPage() {
           {loading ? '가입 중...' : '가입하기'}
         </button>
       </form>
+      <p className="mt-7 text-sm text-muted-foreground text-center">
+        이미 계정이 있으신가요?{' '}
+        <Link href="/login" className="text-primary font-medium hover:text-primary-hover transition-colors">
+          로그인
+        </Link>
+      </p>
     </div>
   )
 }

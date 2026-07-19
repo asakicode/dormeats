@@ -72,31 +72,36 @@ export default function NotificationBell() {
 
   return (
     <div className="relative" ref={ref}>
-      <button onClick={handleOpen} className="relative text-lg">
+      <button
+        onClick={handleOpen}
+        className="relative text-lg leading-none p-2 rounded-full text-foreground/70 hover:text-foreground hover:bg-surface-hover transition-colors"
+      >
         🔔
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+          <span className="absolute top-0.5 right-0.5 bg-danger text-primary-foreground text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center ring-2 ring-surface">
             {unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-72 bg-white border rounded-xl shadow-lg z-50 max-h-96 overflow-y-auto">
+        <div className="absolute right-0 mt-2 w-72 rounded-2xl border border-border bg-surface shadow-[0_4px_16px_rgba(36,26,16,0.06)] z-50 max-h-96 overflow-y-auto">
           {notifications.length === 0 ? (
-            <p className="p-4 text-sm text-gray-400">알림이 없습니다.</p>
+            <p className="p-4 text-sm text-muted-foreground">알림이 없습니다.</p>
           ) : (
             <ul>
               {notifications.map((n) => (
-                <li key={n.id} className="border-b last:border-b-0">
+                <li key={n.id} className="border-b border-border last:border-b-0">
                   <Link
                     href={boardLink(n.posts?.board_type ?? 'wish', n.post_id)}
                     onClick={() => setOpen(false)}
-                    className="block p-3 text-sm hover:bg-gray-50"
+                    className="block p-3 text-sm hover:bg-surface-hover transition-colors"
                   >
-                    <span className="font-medium">{n.actor?.nickname ?? '누군가'}</span>
-                    {n.type === 'comment' ? '님이 댓글을 남겼습니다: ' : '님이 좋아요를 눌렀습니다: '}
-                    <span className="text-gray-500">{n.posts?.title}</span>
+                    <span className="font-medium text-foreground">{n.actor?.nickname ?? '누군가'}</span>
+                    <span className="text-foreground/80">
+                      {n.type === 'comment' ? '님이 댓글을 남겼습니다: ' : '님이 좋아요를 눌렀습니다: '}
+                    </span>
+                    <span className="text-muted-foreground">{n.posts?.title}</span>
                   </Link>
                 </li>
               ))}
