@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
-import { getMondayOfWeek, formatDate } from '@/lib/date'
+import { getMondayOfWeek, formatDate, getKoreaToday } from '@/lib/date'
 import Link from 'next/link'
+
 
 const MEAL_TYPE_LABEL: Record<string, string> = {
   breakfast: '아침',
@@ -8,10 +9,10 @@ const MEAL_TYPE_LABEL: Record<string, string> = {
   dinner: '저녁',
 }
 const MEAL_TYPE_ORDER = ['breakfast', 'lunch', 'dinner']
-const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토']
+const DAY_LABELS = ['월', '화', '수', '목', '금', '토', '일']
 
 export default async function WeekPage() {
-  const today = new Date()
+  const today = getKoreaToday()
   const monday = getMondayOfWeek(today)
   const weekDates: string[] = []
   for (let i = 0; i < 7; i++) {

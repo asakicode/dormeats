@@ -60,6 +60,7 @@ export default function Header() {
         <Link href="/free-board">자유게시판</Link>  
         {loading ? null : nickname ? (
           <>
+            <Link href="/mypage">마이페이지</Link>
             <span className="text-gray-500">{nickname}님</span>
             <button onClick={handleLogout} className="text-gray-500 underline">
               로그아웃

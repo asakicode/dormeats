@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import ReviewSection from './components/ReviewSection'
+import { getKoreaToday, formatDate } from '@/lib/date'
 
 const MEAL_TYPE_LABEL: Record<string, string> = {
   breakfast: '아침',
@@ -10,7 +11,7 @@ const MEAL_TYPE_LABEL: Record<string, string> = {
 const MEAL_TYPE_ORDER = ['breakfast', 'lunch', 'dinner']
 
 export default async function Home() {
-  const todayStr = new Date().toISOString().split('T')[0]
+  const todayStr = formatDate(getKoreaToday())
 
   const { data: meals, error } = await supabase
     .from('meals')

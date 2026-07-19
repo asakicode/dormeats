@@ -9,3 +9,8 @@ export function getMondayOfWeek(date: Date): Date {
 export function formatDate(date: Date): string {
   return date.toISOString().split('T')[0]
 }
+export function getKoreaToday(): Date {
+  const now = new Date()
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000
+  return new Date(utc + 9 * 60 * 60000)
+}
