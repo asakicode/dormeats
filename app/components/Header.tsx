@@ -56,6 +56,8 @@ export default function Header() {
       </Link>
       <nav className="flex gap-4 items-center text-sm">
         <Link href="/week">주간식단</Link>
+        <Link href="/board">희망메뉴</Link>
+        <Link href="/free-board">자유게시판</Link>  
         {loading ? null : nickname ? (
           <>
             <span className="text-gray-500">{nickname}님</span>

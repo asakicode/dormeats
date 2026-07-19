@@ -3,7 +3,14 @@ import { notFound } from 'next/navigation'
 import LikeButton from '../../components/LikeButton'
 import CommentSection from '../../components/CommentSection'
 
-export default async function PostDetailPage({
+const CATEGORY_LABEL: Record<string, string> = {
+  restaurant: '식당',
+  life: '생활',
+  delivery: '택배',
+  question: '질문',
+}
+
+export default async function FreePostDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>
@@ -17,6 +24,7 @@ export default async function PostDetailPage({
       id,
       title,
       content,
+      category,
       is_anonymous,
       like_count,
       created_at,
@@ -32,6 +40,9 @@ export default async function PostDetailPage({
 
   return (
     <div className="max-w-2xl mx-auto p-6">
+      <span className="text-xs text-gray-400">
+        [{CATEGORY_LABEL[post.category ?? ''] ?? '기타'}]
+      </span>
       <h1 className="text-2xl font-bold mb-2">{post.title}</h1>
       <p className="text-sm text-gray-500 mb-6">
         {post.is_anonymous ? '익명' : post.users?.nickname ?? '알 수 없음'}
