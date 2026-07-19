@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Gothic_A1, Gowun_Batang } from "next/font/google";
 import "./globals.css";
 import Header from "./components/Header";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const gothicA1 = Gothic_A1({
+  variable: "--font-body",
   subsets: ["latin"],
+  weight: ["400", "500", "700", "800"],
 });
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const gowunBatang = Gowun_Batang({
+  variable: "--font-display",
   subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
@@ -25,11 +27,11 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${gothicA1.variable} ${gowunBatang.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col bg-background text-foreground">
         <Header />
-        {children}
+        <main className="flex-1">{children}</main>
       </body>
     </html>
   );

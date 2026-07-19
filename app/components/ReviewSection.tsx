@@ -79,28 +79,35 @@ export default function ReviewSection({ mealId }: { mealId: string }) {
   }
 
   return (
-    <div className="mt-3 pt-3 border-t">
+    <div className="mt-4 pt-4 border-t border-border">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-gray-500">
-          {avgRating ? `⭐ ${avgRating} (${reviews.length}개 후기)` : '아직 후기 없음'}
+        <p className="text-sm text-muted-foreground">
+          {avgRating ? (
+            <>
+              <span className="font-semibold text-foreground">⭐ {avgRating}</span>
+              <span className="ml-1">({reviews.length}개 후기)</span>
+            </>
+          ) : (
+            '아직 후기 없음'
+          )}
         </p>
         <button
           onClick={() => setOpen(!open)}
-          className="text-sm text-blue-600 underline"
+          className="text-sm font-medium text-primary-hover hover:underline"
         >
           {open ? '닫기' : '후기 작성'}
         </button>
       </div>
 
       {open && (
-        <form onSubmit={handleSubmit} className="mt-3 space-y-2">
+        <form onSubmit={handleSubmit} className="mt-3 space-y-2.5 rounded-xl border border-border bg-surface p-3.5">
           <div className="flex gap-1">
             {[1, 2, 3, 4, 5].map((n) => (
               <button
                 type="button"
                 key={n}
                 onClick={() => setRating(n)}
-                className="text-xl"
+                className="text-xl leading-none transition-transform hover:scale-110"
               >
                 {n <= rating ? '⭐' : '☆'}
               </button>
@@ -110,12 +117,12 @@ export default function ReviewSection({ mealId }: { mealId: string }) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="후기를 남겨보세요 (선택)"
-            className="w-full border rounded-lg p-2 text-sm h-16"
+            className="w-full border border-border rounded-xl px-3.5 py-2.5 text-sm bg-background h-16 outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
           />
           <button
             type="submit"
             disabled={loading}
-            className="bg-black text-white px-4 py-2 rounded-lg text-sm disabled:opacity-50"
+            className="bg-primary text-primary-foreground px-4 py-2 rounded-xl text-sm font-semibold hover:bg-primary-hover transition-colors disabled:opacity-50"
           >
             {loading ? '등록 중...' : '등록'}
           </button>
@@ -123,14 +130,14 @@ export default function ReviewSection({ mealId }: { mealId: string }) {
       )}
 
       {reviews.length > 0 && (
-        <ul className="mt-3 space-y-2">
+        <ul className="mt-3 space-y-2.5">
           {reviews.map((r) => (
-            <li key={r.id} className="text-sm">
-              <span>{'⭐'.repeat(r.rating)}</span>
-              <span className="text-gray-500 ml-2">
+            <li key={r.id} className="text-sm rounded-xl border border-border bg-surface p-3">
+              <span className="text-amber-500">{'⭐'.repeat(r.rating)}</span>
+              <span className="text-muted-foreground ml-2">
                 {r.users?.nickname ?? '알 수 없음'}
               </span>
-              {r.content && <p className="text-gray-700 mt-0.5">{r.content}</p>}
+              {r.content && <p className="text-foreground/90 mt-0.5">{r.content}</p>}
             </li>
           ))}
         </ul>

@@ -86,38 +86,48 @@ export default function MyPage() {
   }, [router])
 
   if (loading) {
-    return <div className="p-10 text-gray-400">불러오는 중...</div>
+    return (
+      <div className="max-w-2xl mx-auto px-6 py-16 text-muted-foreground">
+        불러오는 중…
+      </div>
+    )
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-1">🙋 마이페이지</h1>
-      <p className="text-gray-500 mb-8">{nickname}님</p>
+    <div className="max-w-2xl mx-auto px-6 py-10">
+      <header className="mb-9">
+        <h1 className="font-serif text-3xl font-bold tracking-tight">마이페이지</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{nickname}님</p>
+      </header>
 
-      <section className="mb-10">
-        <h2 className="font-semibold mb-3">내가 쓴 글 ({posts.length})</h2>
+      <section className="mb-9">
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+          내가 쓴 글 ({posts.length})
+        </h2>
         {posts.length === 0 ? (
-          <p className="text-gray-400 text-sm">아직 작성한 글이 없습니다.</p>
+          <p className="rounded-2xl border border-dashed border-border-strong bg-surface px-4 py-6 text-center text-sm text-muted-foreground">
+            아직 작성한 글이 없습니다.
+          </p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="space-y-2.5">
             {posts.map((post) => (
               <li key={post.id}>
                 <Link
                   href={boardLink(post.board_type, post.id)}
-                  className="block border rounded-lg p-3 hover:bg-gray-50"
+                  className="block rounded-xl border border-border bg-surface p-3.5 transition-colors hover:border-border-strong hover:bg-surface-hover"
                 >
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center gap-3">
                     <span>
-                      <span className="text-xs text-gray-400 mr-2">
+                      <span className="text-xs font-medium text-primary-hover mr-2">
                         [{BOARD_LABEL[post.board_type] ?? post.board_type}]
                       </span>
                       {post.title}
                     </span>
-                    <span className="text-sm text-gray-400">
+                    <span className="shrink-0 text-sm text-muted-foreground tabular-nums">
                       ❤️ {post.like_count}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {new Date(post.created_at).toLocaleDateString('ko-KR')}
                   </p>
                 </Link>
@@ -127,23 +137,27 @@ export default function MyPage() {
         )}
       </section>
 
-      <section>
-        <h2 className="font-semibold mb-3">내가 쓴 댓글 ({comments.length})</h2>
+      <section className="mb-9">
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+          내가 쓴 댓글 ({comments.length})
+        </h2>
         {comments.length === 0 ? (
-          <p className="text-gray-400 text-sm">아직 작성한 댓글이 없습니다.</p>
+          <p className="rounded-2xl border border-dashed border-border-strong bg-surface px-4 py-6 text-center text-sm text-muted-foreground">
+            아직 작성한 댓글이 없습니다.
+          </p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="space-y-2.5">
             {comments.map((c) => (
               <li key={c.id}>
                 <Link
                   href={boardLink(c.posts?.board_type ?? 'wish', c.post_id)}
-                  className="block border rounded-lg p-3 hover:bg-gray-50"
+                  className="block rounded-xl border border-border bg-surface p-3.5 transition-colors hover:border-border-strong hover:bg-surface-hover"
                 >
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-muted-foreground">
                     {c.posts?.title ?? '삭제된 글'}
                   </p>
-                  <p className="text-sm mt-1">{c.content}</p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-sm mt-1 text-foreground/90">{c.content}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
                     {new Date(c.created_at).toLocaleDateString('ko-KR')}
                   </p>
                 </Link>
@@ -153,16 +167,20 @@ export default function MyPage() {
         )}
       </section>
 
-    <section className="mt-10">
-        <h2 className="font-semibold mb-3">즐겨찾기 메뉴 ({favorites.length})</h2>
+      <section>
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+          즐겨찾기 메뉴 ({favorites.length})
+        </h2>
         {favorites.length === 0 ? (
-          <p className="text-gray-400 text-sm">아직 즐겨찾기한 메뉴가 없습니다.</p>
+          <p className="rounded-2xl border border-dashed border-border-strong bg-surface px-4 py-6 text-center text-sm text-muted-foreground">
+            아직 즐겨찾기한 메뉴가 없습니다.
+          </p>
         ) : (
           <ul className="flex flex-wrap gap-2">
             {favorites.map((f) => (
               <li
                 key={f.id}
-                className="border rounded-full px-3 py-1 text-sm bg-red-50 border-red-200"
+                className="rounded-full border border-accent-soft-border bg-accent-soft px-3.5 py-1.5 text-sm text-primary-hover font-medium"
               >
                 ❤️ {f.menu_items?.name}
               </li>
@@ -170,7 +188,6 @@ export default function MyPage() {
           </ul>
         )}
       </section>
-
     </div>
   )
 }

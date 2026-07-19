@@ -40,9 +40,9 @@ export default async function WeekPage() {
 
   if (error) {
     return (
-      <div className="p-10">
-        <h1 className="text-xl font-bold text-red-600">오류 발생 😢</h1>
-        <p className="mt-2 text-sm text-gray-600">{error.message}</p>
+      <div className="max-w-xl mx-auto px-6 py-16">
+        <h1 className="font-serif text-xl font-bold text-danger">오류 발생 😢</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
       </div>
     )
   }
@@ -58,50 +58,78 @@ export default async function WeekPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-5xl mx-auto px-6 py-10">
+      <div className="flex items-end justify-between gap-4 mb-7">
         <div>
-          <h1 className="text-2xl font-bold mb-1">📅 주간 식단</h1>
-          <p className="text-gray-500">
-            {startStr} ~ {endStr} · 도봉학사
+          <h1 className="font-serif text-3xl font-bold tracking-tight">주간 식단</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {startStr} ~ {endStr}{' '}
+            <span className="mx-1 text-border-strong">·</span> 도봉학사
           </p>
         </div>
-        <Link href="/" className="text-sm text-blue-600 underline">
-          오늘의 식단으로
+        <Link
+          href="/"
+          className="shrink-0 text-sm font-medium text-primary hover:text-primary-hover transition-colors"
+        >
+          오늘의 식단으로 →
         </Link>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+      <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
+        <table className="w-full border-collapse text-sm">
           <thead>
             <tr>
-              <th className="border p-2 bg-gray-50 w-16">구분</th>
-              {weekDates.map((dateStr, i) => (
-                <th key={dateStr} className="border p-2 bg-gray-50 text-sm">
-                  <div>{DAY_LABELS[i]}</div>
-                  <div className="text-xs text-gray-400">{dateStr.slice(5)}</div>
-                </th>
-              ))}
+              <th className="p-3 w-16 text-xs font-semibold text-muted-foreground border-b border-border">
+                구분
+              </th>
+              {weekDates.map((dateStr, i) => {
+                const isToday = dateStr === formatDate(today)
+                return (
+                  <th
+                    key={dateStr}
+                    className={`p-3 border-b border-l border-border font-medium ${
+                      isToday ? 'bg-accent-soft' : ''
+                    }`}
+                  >
+                    <div className={isToday ? 'text-primary-hover font-bold' : ''}>
+                      {DAY_LABELS[i]}
+                    </div>
+                    <div className="text-xs font-normal text-muted-foreground mt-0.5">
+                      {dateStr.slice(5)}
+                    </div>
+                  </th>
+                )
+              })}
             </tr>
           </thead>
           <tbody>
-            {MEAL_TYPE_ORDER.map((mealType) => (
+            {MEAL_TYPE_ORDER.map((mealType, rowIdx) => (
               <tr key={mealType}>
-                <td className="border p-2 font-semibold bg-gray-50 text-center">
+                <td
+                  className={`p-3 font-semibold text-center text-foreground/80 ${
+                    rowIdx > 0 ? 'border-t border-border' : ''
+                  }`}
+                >
                   {MEAL_TYPE_LABEL[mealType]}
                 </td>
                 {weekDates.map((dateStr) => {
                   const items = mealMap[dateStr]?.[mealType]
+                  const isToday = dateStr === formatDate(today)
                   return (
-                    <td key={dateStr} className="border p-2 align-top text-sm">
+                    <td
+                      key={dateStr}
+                      className={`p-3 align-top border-l border-border ${
+                        rowIdx > 0 ? 'border-t' : ''
+                      } ${isToday ? 'bg-accent-soft/40' : ''}`}
+                    >
                       {items && items.length > 0 ? (
-                        <ul className="space-y-0.5">
+                        <ul className="space-y-1 leading-snug">
                           {items.map((name, idx) => (
                             <li key={idx}>{name}</li>
                           ))}
                         </ul>
                       ) : (
-                        <span className="text-gray-300">-</span>
+                        <span className="text-border-strong">–</span>
                       )}
                     </td>
                   )

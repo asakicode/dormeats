@@ -51,7 +51,12 @@ export default function FavoriteButton({ menuItemId }: { menuItemId: string }) {
   }
 
   return (
-    <button onClick={toggle} disabled={loading} className="text-sm">
+    <button
+      onClick={toggle}
+      disabled={loading}
+      aria-label={favorited ? '즐겨찾기 해제' : '즐겨찾기 추가'}
+      className="flex h-8 w-8 items-center justify-center rounded-full text-base transition-transform hover:scale-110 hover:bg-accent-soft disabled:opacity-50"
+    >
       {favorited ? '❤️' : '🤍'}
     </button>
   )

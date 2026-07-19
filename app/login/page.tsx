@@ -35,34 +35,40 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="max-w-sm mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">로그인</h1>
-      <form onSubmit={handleLogin} className="space-y-4">
+    <div className="max-w-sm mx-auto px-6 py-16">
+      <div className="text-center mb-8">
+        <p className="text-2xl mb-1">🍚</p>
+        <h1 className="font-serif text-2xl font-bold tracking-tight">로그인</h1>
+      </div>
+      <form
+        onSubmit={handleLogin}
+        className="space-y-4 rounded-2xl border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(36,26,16,0.04)]"
+      >
         <div>
-          <label className="block text-sm font-medium mb-1">아이디</label>
+          <label className="block text-sm font-medium mb-1.5">아이디</label>
           <input
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full border rounded-lg p-2"
+            className="w-full border border-border rounded-xl px-3.5 py-2.5 outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">비밀번호</label>
+          <label className="block text-sm font-medium mb-1.5">비밀번호</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border rounded-lg p-2"
+            className="w-full border border-border rounded-xl px-3.5 py-2.5 outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
             required
           />
         </div>
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {error && <p className="text-danger text-sm">{error}</p>}
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-black text-white rounded-lg p-2 disabled:opacity-50"
+          className="w-full bg-primary text-primary-foreground rounded-xl py-2.5 font-semibold hover:bg-primary-hover transition-colors disabled:opacity-50"
         >
           {loading ? '로그인 중...' : '로그인'}
         </button>

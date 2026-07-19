@@ -1,26 +1,75 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --background: #fbf6ec;
+  --surface: #fffdf8;
+  --surface-hover: #fff8ec;
+  --foreground: #241a10;
+  --muted-foreground: #8a7a63;
+  --border: #e9dfc9;
+  --border-strong: #ddccac;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --primary: #d9581f;
+  --primary-hover: #b8480f;
+  --primary-foreground: #fff6ec;
+  --accent-soft: #fbe7d6;
+  --accent-soft-border: #f3cda4;
+
+  --success: #3f7d4f;
+  --danger: #c23b2f;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #18130c;
+    --surface: #221a10;
+    --surface-hover: #2a2013;
+    --foreground: #f4ecdc;
+    --muted-foreground: #a8967a;
+    --border: #382c1a;
+    --border-strong: #4a3a22;
+
+    --primary: #f0813f;
+    --primary-hover: #f79a5f;
+    --primary-foreground: #1c1005;
+    --accent-soft: #3a2415;
+    --accent-soft-border: #5a3a1f;
+
+    --success: #6bbf80;
+    --danger: #ec6b5c;
   }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-border: var(--accent-soft-border);
+
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "tnum";
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--primary-hover);
 }

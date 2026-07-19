@@ -49,41 +49,42 @@ export default function NewPostPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">✏️ 희망메뉴 작성</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="max-w-2xl mx-auto px-6 py-10">
+      <h1 className="font-serif text-2xl font-bold tracking-tight mb-7">희망메뉴 작성</h1>
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm font-medium mb-1">제목</label>
+          <label className="block text-sm font-medium mb-1.5">제목</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full border rounded-lg p-2"
+            className="w-full border border-border rounded-xl px-3.5 py-2.5 bg-surface outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">내용</label>
+          <label className="block text-sm font-medium mb-1.5">내용</label>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="w-full border rounded-lg p-2 h-32"
+            className="w-full border border-border rounded-xl px-3.5 py-2.5 bg-surface h-32 outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
             required
           />
         </div>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">
           <input
             type="checkbox"
             checked={isAnonymous}
             onChange={(e) => setIsAnonymous(e.target.checked)}
+            className="accent-primary"
           />
           익명으로 작성
         </label>
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {error && <p className="text-danger text-sm">{error}</p>}
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-black text-white rounded-lg p-2 disabled:opacity-50"
+          className="w-full bg-primary text-primary-foreground rounded-xl py-2.5 font-semibold hover:bg-primary-hover transition-colors disabled:opacity-50"
         >
           {loading ? '작성 중...' : '작성하기'}
         </button>

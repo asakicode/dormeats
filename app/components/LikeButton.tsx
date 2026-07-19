@@ -1,5 +1,4 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -7,9 +6,11 @@ import { supabase } from '@/lib/supabase'
 export default function LikeButton({
   postId,
   initialCount,
+  authorId,
 }: {
   postId: string
   initialCount: number
+  authorId: string
 }) {
   const [liked, setLiked] = useState(false)
   const [count, setCount] = useState(initialCount)
@@ -23,14 +24,12 @@ export default function LikeButton({
       } = await supabase.auth.getUser()
       if (!user) return
       setUserId(user.id)
-
       const { data } = await supabase
         .from('likes')
         .select('id')
         .eq('post_id', postId)
         .eq('user_id', user.id)
         .maybeSingle()
-
       setLiked(!!data)
     }
     check()
@@ -41,7 +40,6 @@ export default function LikeButton({
       alert('로그인이 필요합니다.')
       return
     }
-
     if (liked) {
       await supabase
         .from('likes')
@@ -63,6 +61,17 @@ export default function LikeButton({
         .eq('id', postId)
       setLiked(true)
       setCount((c) => c + 1)
+
+      // 본인 글이 아닐 때만 알림 생성
+      if (authorId !== userId) {
+        await supabase.from('notifications').insert({
+          user_id: authorId,
+          actor_id: userId,
+          type: 'like',
+          post_id: postId,
+        })
+      }
+
       router.refresh()
     }
   }
@@ -70,8 +79,10 @@ export default function LikeButton({
   return (
     <button
       onClick={toggleLike}
-      className={`px-4 py-2 rounded-lg border text-sm ${
-        liked ? 'bg-red-50 border-red-300 text-red-600' : 'border-gray-300'
+      className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium tabular-nums transition-colors ${
+        liked
+          ? 'border-accent-soft-border bg-accent-soft text-primary-hover'
+          : 'border-border text-muted-foreground hover:border-border-strong hover:bg-surface-hover'
       }`}
     >
       {liked ? '❤️' : '🤍'} {count}

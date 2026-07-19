@@ -33,9 +33,9 @@ export default async function Home() {
 
   if (error) {
     return (
-      <div className="p-10">
-        <h1 className="text-xl font-bold text-red-600">오류 발생 😢</h1>
-        <p className="mt-2 text-sm text-gray-600">{error.message}</p>
+      <div className="max-w-xl mx-auto px-6 py-16">
+        <h1 className="font-serif text-xl font-bold text-danger">오류 발생 😢</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
       </div>
     )
   }
@@ -45,25 +45,41 @@ export default async function Home() {
   )
 
   return (
-    <div className="max-w-xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-1">🍚 오늘의 식단</h1>
-      <p className="text-gray-500 mb-6">{todayStr} · 도봉학사</p>
+    <div className="max-w-xl mx-auto px-6 py-10">
+      <header className="mb-8">
+        <h1 className="font-serif text-3xl font-bold tracking-tight">오늘의 식단</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {todayStr} <span className="mx-1.5 text-border-strong">·</span>{' '}
+          <span className="inline-block px-2 py-0.5 rounded-full bg-accent-soft text-primary-hover font-medium">
+            도봉학사
+          </span>
+        </p>
+      </header>
 
       {sortedMeals.length === 0 && (
-        <p className="text-gray-400">오늘 등록된 식단이 없습니다.</p>
+        <p className="rounded-2xl border border-dashed border-border-strong bg-surface px-5 py-8 text-center text-muted-foreground">
+          오늘 등록된 식단이 없습니다.
+        </p>
       )}
 
-      <div className="space-y-6">
+      <div className="space-y-5">
         {sortedMeals.map((meal) => (
-          <div key={meal.id} className="border rounded-xl p-4">
-            <h2 className="text-lg font-semibold mb-3">
+          <div
+            key={meal.id}
+            className="rounded-2xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(36,26,16,0.04)] transition-shadow hover:shadow-[0_4px_16px_rgba(36,26,16,0.06)]"
+          >
+            <h2 className="font-serif text-lg font-bold mb-3.5 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" aria-hidden />
               {MEAL_TYPE_LABEL[meal.meal_type] ?? meal.meal_type}
             </h2>
-            <ul className="space-y-1">
+            <ul className="space-y-2">
               {meal.meal_items
                 .sort((a, b) => a.display_order - b.display_order)
                 .map((item, idx) => (
-                  <li key={idx} className="text-gray-700 flex items-center gap-1.5">
+                  <li
+                    key={idx}
+                    className="flex items-center justify-between gap-2 text-[15px] text-foreground/90"
+                  >
                     <span>{item.menu_items?.name}</span>
                     {item.menu_items?.id && (
                       <FavoriteButton menuItemId={item.menu_items.id} />
