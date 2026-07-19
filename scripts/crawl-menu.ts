@@ -14,8 +14,41 @@ const MEAL_TYPE_MAP: Record<string, string> = {
   저녁: 'dinner',
 }
 
+// 메뉴명 정규화: 공백 제거, 특수문자 정리
+function normalize(name: string): string {
+  return name.replace(/\s+/g, '').trim()
+}
+
+// 기존 menu_items 중에서 같은 메뉴로 볼 수 있는 게 있는지 규칙 기반으로 찾기
+// 나중에 여기에 "규칙으로 애매하면 LLM에게 판단 맡기기" 단계를 추가할 수 있음
+function findMatchingMenuItem(
+  newName: string,
+  existingItems: { id: string; name: string }[]
+): { id: string; name: string } | null {
+  const normalizedNew = normalize(newName)
+
+  const exactMatch = existingItems.find(
+    (item) => normalize(item.name) === normalizedNew
+  )
+  if (exactMatch) return exactMatch
+
+  if (normalizedNew.length >= 2) {
+    const partialMatch = existingItems.find((item) => {
+      const normalizedExisting = normalize(item.name)
+      return (
+        normalizedExisting.length >= 2 &&
+        (normalizedNew.includes(normalizedExisting) ||
+          normalizedExisting.includes(normalizedNew))
+      )
+    })
+    if (partialMatch) return partialMatch
+  }
+
+  return null
+}
+
 function getMondayOfWeek(date: Date): Date {
-  const day = date.getDay() // 0 = 일요일
+  const day = date.getDay()
   const diff = day === 0 ? -6 : 1 - day
   const monday = new Date(date)
   monday.setDate(date.getDate() + diff)
@@ -27,6 +60,13 @@ function formatDate(date: Date): string {
 }
 
 async function crawlWeek(monday: Date) {
+  // 기존 menu_items 전체를 미리 불러와서 메모리에 캐싱 (매칭용)
+  const { data: existingMenuItems } = await supabase
+    .from('menu_items')
+    .select('id, name')
+
+  let menuItemCache = existingMenuItems ?? []
+
   const sunday = new Date(monday)
   sunday.setDate(monday.getDate() + 6)
 
@@ -70,17 +110,17 @@ async function crawlWeek(monday: Date) {
       if (!dateStr) continue
 
       const cellHtml = cell.html() || ''
-    const items = cellHtml
-    .split('<br>')
-    .map((s) =>
-        s
-        .replace(/<[^>]+>/g, '')
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .trim()
-    )
-    .filter((s) => s.length > 0)
+      const items = cellHtml
+        .split('<br>')
+        .map((s) =>
+          s
+            .replace(/<[^>]+>/g, '')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .trim()
+        )
+        .filter((s) => s.length > 0)
 
       if (items.length === 0) continue
 
@@ -108,15 +148,25 @@ async function crawlWeek(monday: Date) {
       for (let order = 0; order < items.length; order++) {
         const itemName = items[order]
 
-        const { data: menuItem, error: menuError } = await supabase
-          .from('menu_items')
-          .upsert({ name: itemName }, { onConflict: 'name' })
-          .select()
-          .single()
+        let menuItem = findMatchingMenuItem(itemName, menuItemCache)
 
-        if (menuError || !menuItem) {
-          console.error(`menu_items 저장 실패 (${itemName}):`, menuError?.message)
-          continue
+        if (!menuItem) {
+          const { data: newMenuItem, error: menuError } = await supabase
+            .from('menu_items')
+            .insert({ name: itemName })
+            .select()
+            .single()
+
+          if (menuError || !newMenuItem) {
+            console.error(`menu_items 저장 실패 (${itemName}):`, menuError?.message)
+            continue
+          }
+
+          menuItem = newMenuItem
+          menuItemCache = [...menuItemCache, newMenuItem]
+          console.log(`  신규 메뉴 등록: ${itemName}`)
+        } else if (normalize(menuItem.name) !== normalize(itemName)) {
+          console.log(`  기존 메뉴로 매칭: "${itemName}" → "${menuItem.name}"`)
         }
 
         const { error: linkError } = await supabase.from('meal_items').insert({
