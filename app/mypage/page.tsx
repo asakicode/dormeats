@@ -13,6 +13,11 @@ type Post = {
   created_at: string
 }
 
+type Favorite = {
+  id: string
+  menu_items: { id: string; name: string } | null
+}
+
 type Comment = {
   id: string
   content: string
@@ -34,6 +39,7 @@ export default function MyPage() {
   const [nickname, setNickname] = useState('')
   const [posts, setPosts] = useState<Post[]>([])
   const [comments, setComments] = useState<Comment[]>([])
+  const [favorites, setFavorites] = useState<Favorite[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -67,6 +73,11 @@ export default function MyPage() {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
       setComments((myComments as unknown as Comment[]) ?? [])
+      const { data: myFavorites } = await supabase
+        .from('favorites')
+        .select('id, menu_items ( id, name )')
+        .eq('user_id', user.id)
+      setFavorites((myFavorites as unknown as Favorite[]) ?? [])
 
       setLoading(false)
     }
@@ -141,6 +152,25 @@ export default function MyPage() {
           </ul>
         )}
       </section>
+
+    <section className="mt-10">
+        <h2 className="font-semibold mb-3">즐겨찾기 메뉴 ({favorites.length})</h2>
+        {favorites.length === 0 ? (
+          <p className="text-gray-400 text-sm">아직 즐겨찾기한 메뉴가 없습니다.</p>
+        ) : (
+          <ul className="flex flex-wrap gap-2">
+            {favorites.map((f) => (
+              <li
+                key={f.id}
+                className="border rounded-full px-3 py-1 text-sm bg-red-50 border-red-200"
+              >
+                ❤️ {f.menu_items?.name}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
     </div>
   )
 }

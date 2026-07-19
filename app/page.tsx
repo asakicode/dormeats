@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import ReviewSection from './components/ReviewSection'
 import { getKoreaToday, formatDate } from '@/lib/date'
+import FavoriteButton from './components/FavoriteButton'
 
 const MEAL_TYPE_LABEL: Record<string, string> = {
   breakfast: '아침',
@@ -22,7 +23,7 @@ export default async function Home() {
       meal_date,
       meal_items (
         display_order,
-        menu_items ( name )
+        menu_items ( id, name )
       )
     `
     )
@@ -62,8 +63,11 @@ export default async function Home() {
               {meal.meal_items
                 .sort((a, b) => a.display_order - b.display_order)
                 .map((item, idx) => (
-                  <li key={idx} className="text-gray-700">
-                    {item.menu_items?.name}
+                  <li key={idx} className="text-gray-700 flex items-center gap-1.5">
+                    <span>{item.menu_items?.name}</span>
+                    {item.menu_items?.id && (
+                      <FavoriteButton menuItemId={item.menu_items.id} />
+                    )}
                   </li>
                 ))}
             </ul>
