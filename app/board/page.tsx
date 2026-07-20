@@ -17,6 +17,14 @@ export default async function BoardPage() {
     .eq('board_type', 'wish')
     .order('created_at', { ascending: false })
 
+  const { data: topPosts } = await supabase
+    .from('posts')
+    .select('id, title, like_count')
+    .eq('board_type', 'wish')
+    .gt('like_count', 0)
+    .order('like_count', { ascending: false })
+    .limit(5)
+
   if (error) {
     return (
       <div className="max-w-xl mx-auto px-6 py-16">
@@ -40,6 +48,32 @@ export default async function BoardPage() {
           글쓰기
         </Link>
       </div>
+
+      {topPosts && topPosts.length > 0 && (
+        <div className="mb-8 rounded-2xl border border-accent-soft-border bg-accent-soft p-5">
+          <h2 className="font-serif text-lg font-bold mb-3">실시간 TOP {topPosts.length}</h2>
+          <ul className="space-y-2.5">
+            {topPosts.map((post, idx) => (
+              <li key={post.id}>
+                <Link
+                  href={`/board/${post.id}`}
+                  className="flex items-center gap-3 group"
+                >
+                  <span className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                    {idx + 1}
+                  </span>
+                  <span className="flex-1 text-sm font-medium text-foreground group-hover:text-primary-hover transition-colors truncate">
+                    {post.title}
+                  </span>
+                  <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                    ❤️ {post.like_count}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {posts?.length === 0 && (
         <p className="rounded-2xl border border-dashed border-border-strong bg-surface px-5 py-8 text-center text-muted-foreground">
