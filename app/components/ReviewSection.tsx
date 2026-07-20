@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { Star } from 'lucide-react'
 
 type Review = {
   id: string
@@ -84,7 +85,8 @@ export default function ReviewSection({ mealId }: { mealId: string }) {
         <p className="text-sm text-muted-foreground">
           {avgRating ? (
             <>
-              <span className="font-semibold text-foreground">⭐ {avgRating}</span>
+              <Star size={14} className="inline fill-star text-star -mt-0.5" />
+              <span className="font-semibold text-foreground ml-1">{avgRating}</span>
               <span className="ml-1">({reviews.length}개 후기)</span>
             </>
           ) : (
@@ -107,9 +109,12 @@ export default function ReviewSection({ mealId }: { mealId: string }) {
                 type="button"
                 key={n}
                 onClick={() => setRating(n)}
-                className="text-xl leading-none transition-transform hover:scale-110"
+                className="transition-transform hover:scale-110"
               >
-                {n <= rating ? '⭐' : '☆'}
+                <Star
+                  size={22}
+                  className={n <= rating ? 'fill-star text-star' : 'text-border-strong'}
+                />
               </button>
             ))}
           </div>
@@ -133,7 +138,11 @@ export default function ReviewSection({ mealId }: { mealId: string }) {
         <ul className="mt-3 space-y-2.5">
           {reviews.map((r) => (
             <li key={r.id} className="text-sm rounded-xl border border-border bg-surface p-3">
-              <span className="text-star">{'⭐'.repeat(r.rating)}</span>
+              <span className="inline-flex items-center gap-0.5">
+                {Array.from({ length: r.rating }).map((_, i) => (
+                  <Star key={i} size={12} className="fill-star text-star" />
+                ))}
+              </span>
               <span className="text-muted-foreground ml-2">
                 {r.users?.nickname ?? '알 수 없음'}
               </span>

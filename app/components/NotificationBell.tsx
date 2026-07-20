@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { Bell } from 'lucide-react'
 
 type Notification = {
   id: string
@@ -74,9 +75,9 @@ export default function NotificationBell() {
     <div className="relative" ref={ref}>
       <button
         onClick={handleOpen}
-        className="relative text-lg leading-none p-2 rounded-full text-foreground/70 hover:text-foreground hover:bg-surface-hover transition-colors"
+        className="relative p-2 rounded-full text-foreground/70 hover:text-foreground hover:bg-surface-hover transition-colors"
       >
-        🔔
+        <Bell size={19} strokeWidth={2} />
         {unreadCount > 0 && (
           <span className="absolute top-0.5 right-0.5 bg-danger text-primary-foreground text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center ring-2 ring-surface">
             {unreadCount}
@@ -97,7 +98,9 @@ export default function NotificationBell() {
                     onClick={() => setOpen(false)}
                     className="block p-3 text-sm hover:bg-surface-hover transition-colors"
                   >
-                    <span className="font-medium text-foreground">{n.actor?.nickname ?? '누군가'}</span>
+                    <span className="font-medium text-foreground">
+                      {n.actor?.nickname ?? '누군가'}
+                    </span>
                     <span className="text-foreground/80">
                       {n.type === 'comment' ? '님이 댓글을 남겼습니다: ' : '님이 좋아요를 눌렀습니다: '}
                     </span>

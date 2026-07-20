@@ -19,6 +19,19 @@ function normalize(name: string): string {
   return name.replace(/\s+/g, '').trim()
 }
 
+// 괄호로만 이루어진 항목은 바로 앞 항목에 합치기 (예: "삼각김밥" + "(참치마요)" → "삼각김밥(참치마요)")
+function mergeParenthesesItems(items: string[]): string[] {
+  const merged: string[] = []
+  for (const item of items) {
+    if (/^\(.+\)$/.test(item) && merged.length > 0) {
+      merged[merged.length - 1] = merged[merged.length - 1] + item
+    } else {
+      merged.push(item)
+    }
+  }
+  return merged
+}
+
 // 기존 menu_items 중에서 같은 메뉴로 볼 수 있는 게 있는지 규칙 기반으로 찾기
 // 나중에 여기에 "규칙으로 애매하면 LLM에게 판단 맡기기" 단계를 추가할 수 있음
 function findMatchingMenuItem(
@@ -110,7 +123,7 @@ async function crawlWeek(monday: Date) {
       if (!dateStr) continue
 
       const cellHtml = cell.html() || ''
-      const items = cellHtml
+      const rawItems = cellHtml
         .split('<br>')
         .map((s) =>
           s
@@ -121,6 +134,8 @@ async function crawlWeek(monday: Date) {
             .trim()
         )
         .filter((s) => s.length > 0)
+
+      const items = mergeParenthesesItems(rawItems)
 
       if (items.length === 0) continue
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { Heart } from 'lucide-react'
 
 export default function FavoriteButton({ menuItemId }: { menuItemId: string }) {
   const [favorited, setFavorited] = useState(false)
@@ -55,11 +56,15 @@ export default function FavoriteButton({ menuItemId }: { menuItemId: string }) {
       onClick={toggle}
       disabled={loading}
       aria-label={favorited ? '즐겨찾기 해제' : '즐겨찾기 추가'}
-      className={`flex h-8 w-8 items-center justify-center rounded-full text-base transition-transform hover:scale-110 disabled:opacity-50 ${
+      className={`flex h-8 w-8 items-center justify-center rounded-full transition-transform hover:scale-110 disabled:opacity-50 ${
         favorited ? 'bg-danger/10' : 'hover:bg-accent-soft'
       }`}
     >
-      {favorited ? '❤️' : '🤍'}
+      <Heart
+        size={16}
+        strokeWidth={2.2}
+        className={favorited ? 'fill-danger text-danger' : 'text-muted-foreground'}
+      />
     </button>
   )
 }
