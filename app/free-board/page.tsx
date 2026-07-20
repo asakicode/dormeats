@@ -1,12 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-
-const CATEGORY_LABEL: Record<string, string> = {
-  restaurant: '식당',
-  life: '생활',
-  delivery: '택배',
-  question: '질문',
-}
+import { CATEGORY_STYLE, getCategoryLabel, type Category } from '@/lib/categories'
 
 export default async function FreeBoardPage({
   searchParams,
@@ -69,19 +63,23 @@ export default async function FreeBoardPage({
         >
           전체
         </Link>
-        {Object.entries(CATEGORY_LABEL).map(([key, label]) => (
-          <Link
-            key={key}
-            href={`/free-board?category=${key}`}
-            className={`px-3.5 py-1.5 rounded-full border font-medium transition-colors ${
-              category === key
-                ? 'bg-primary border-primary text-primary-foreground'
-                : 'border-border text-muted-foreground hover:border-border-strong hover:text-foreground'
-            }`}
-          >
-            {label}
-          </Link>
-        ))}
+        {(Object.keys(CATEGORY_STYLE) as Category[]).map((key) => {
+          const style = CATEGORY_STYLE[key]
+          const isActive = category === key
+          return (
+            <Link
+              key={key}
+              href={`/free-board?category=${key}`}
+              className={`px-3.5 py-1.5 rounded-full border font-medium transition-colors ${
+                isActive
+                  ? `${style.activeBg} border-transparent text-white`
+                  : `${style.bg} ${style.text} border-transparent hover:opacity-80`
+              }`}
+            >
+              {style.label}
+            </Link>
+          )
+        })}
       </div>
 
       {posts?.length === 0 && (
@@ -91,31 +89,41 @@ export default async function FreeBoardPage({
       )}
 
       <ul className="grid gap-3 sm:grid-cols-2">
-        {posts?.map((post) => (
-          <li key={post.id}>
-            <Link
-              href={`/free-board/${post.id}`}
-              className="block rounded-2xl border border-border bg-surface p-4 transition-all hover:border-border-strong hover:shadow-[0_4px_16px_rgba(118,85,42,0.06)]"
-            >
-              <div className="flex justify-between items-start gap-3">
-                <div>
-                  <span className="text-xs font-medium text-primary-hover mr-2">
-                    [{CATEGORY_LABEL[post.category ?? ''] ?? '기타'}]
+        {posts?.map((post) => {
+          const style =
+            post.category && post.category in CATEGORY_STYLE
+              ? CATEGORY_STYLE[post.category as Category]
+              : null
+          return (
+            <li key={post.id}>
+              <Link
+                href={`/free-board/${post.id}`}
+                className="block rounded-2xl border border-border bg-surface p-4 transition-all hover:border-border-strong hover:shadow-[0_4px_16px_rgba(118,85,42,0.06)]"
+              >
+                <div className="flex justify-between items-start gap-3">
+                  <div>
+                    <span
+                      className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full mr-2 ${
+                        style ? `${style.bg} ${style.text}` : 'bg-accent-soft text-primary-hover'
+                      }`}
+                    >
+                      {getCategoryLabel(post.category)}
+                    </span>
+                    <span className="font-semibold text-foreground">{post.title}</span>
+                  </div>
+                  <span className="shrink-0 text-sm text-muted-foreground tabular-nums">
+                    ❤️ {post.like_count}
                   </span>
-                  <span className="font-semibold text-foreground">{post.title}</span>
                 </div>
-                <span className="shrink-0 text-sm text-muted-foreground tabular-nums">
-                  ❤️ {post.like_count}
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1.5">
-                {post.is_anonymous ? '익명' : post.users?.nickname ?? '알 수 없음'}
-                <span className="mx-1.5 text-border-strong">·</span>
-                {new Date(post.created_at).toLocaleDateString('ko-KR')}
-              </p>
-            </Link>
-          </li>
-        ))}
+                <p className="text-sm text-muted-foreground mt-1.5">
+                  {post.is_anonymous ? '익명' : post.users?.nickname ?? '알 수 없음'}
+                  <span className="mx-1.5 text-border-strong">·</span>
+                  {new Date(post.created_at).toLocaleDateString('ko-KR')}
+                </p>
+              </Link>
+            </li>
+          )
+        })}
       </ul>
     </div>
   )
