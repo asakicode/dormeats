@@ -133,7 +133,7 @@ export default function ReviewSection({ mealId }: { mealId: string }) {
         <ul className="mt-3 space-y-2.5">
           {reviews.map((r) => (
             <li key={r.id} className="text-sm rounded-xl border border-border bg-surface p-3">
-              <span className="text-amber-500">{'⭐'.repeat(r.rating)}</span>
+              <span className="text-star">{'⭐'.repeat(r.rating)}</span>
               <span className="text-muted-foreground ml-2">
                 {r.users?.nickname ?? '알 수 없음'}
               </span>

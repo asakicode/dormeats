@@ -52,7 +52,7 @@ export default async function BoardPage() {
           <li key={post.id}>
             <Link
               href={`/board/${post.id}`}
-              className="block rounded-2xl border border-border bg-surface p-4 transition-all hover:border-border-strong hover:shadow-[0_4px_16px_rgba(36,26,16,0.06)]"
+              className="block rounded-2xl border border-border bg-surface p-4 transition-all hover:border-border-strong hover:shadow-[0_4px_16px_rgba(118,85,42,0.06)]"
             >
               <div className="flex justify-between items-start gap-3">
                 <h2 className="font-semibold text-foreground">{post.title}</h2>

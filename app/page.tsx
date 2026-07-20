@@ -68,8 +68,8 @@ export default async function Home() {
               key={meal.id}
               className={
                 isCurrent
-                  ? 'rounded-2xl border border-accent-soft-border bg-accent-soft/40 p-6 shadow-[0_1px_2px_rgba(36,26,16,0.04)] transition-shadow hover:shadow-[0_4px_16px_rgba(36,26,16,0.06)]'
-                  : 'rounded-2xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(36,26,16,0.04)] transition-shadow hover:shadow-[0_4px_16px_rgba(36,26,16,0.06)]'
+                  ? 'rounded-2xl border border-accent-soft-border bg-accent-soft p-6 shadow-[0_1px_2px_rgba(118,85,42,0.04)] transition-shadow hover:shadow-[0_4px_16px_rgba(118,85,42,0.06)]'
+                  : 'rounded-2xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(118,85,42,0.04)] transition-shadow hover:shadow-[0_4px_16px_rgba(118,85,42,0.06)]'
               }
             >
               <h2

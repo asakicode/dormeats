@@ -85,7 +85,7 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-72 rounded-2xl border border-border bg-surface shadow-[0_4px_16px_rgba(36,26,16,0.06)] z-50 max-h-96 overflow-y-auto">
+        <div className="absolute right-0 mt-2 w-72 rounded-2xl border border-border bg-surface shadow-[0_4px_16px_rgba(118,85,42,0.06)] z-50 max-h-96 overflow-y-auto">
           {notifications.length === 0 ? (
             <p className="p-4 text-sm text-muted-foreground">알림이 없습니다.</p>
           ) : (

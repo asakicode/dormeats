@@ -59,7 +59,7 @@ export default function SignupPage() {
       </div>
       <form
         onSubmit={handleSignup}
-        className="space-y-4 rounded-2xl border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(36,26,16,0.04)]"
+        className="space-y-4 rounded-2xl border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(118,85,42,0.04)]"
       >
         <div>
           <label className="block text-sm font-medium mb-1.5">아이디</label>

@@ -81,7 +81,7 @@ export default function LikeButton({
       onClick={toggleLike}
       className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium tabular-nums transition-colors ${
         liked
-          ? 'border-accent-soft-border bg-accent-soft text-primary-hover'
+          ? 'border-danger bg-danger/10 text-danger'
           : 'border-border text-muted-foreground hover:border-border-strong hover:bg-surface-hover'
       }`}
     >

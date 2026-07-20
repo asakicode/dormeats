@@ -111,7 +111,7 @@ export default function CommentSection({
               {currentUserId === c.user_id && (
                 <button
                   onClick={() => handleDelete(c)}
-                  className="text-xs text-red-500 underline"
+                  className="text-xs text-danger underline"
                 >
                   삭제
                 </button>

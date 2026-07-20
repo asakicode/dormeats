@@ -64,7 +64,7 @@ export default function DeletePostButton({
     <button
       onClick={handleDelete}
       disabled={loading}
-      className="text-sm text-red-500 underline disabled:opacity-50"
+      className="text-sm text-danger underline disabled:opacity-50"
     >
       {loading ? '삭제 중...' : '삭제'}
     </button>
