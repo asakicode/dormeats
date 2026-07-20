@@ -1,35 +1,83 @@
-import { supabase } from '@/lib/supabase'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
 
-export default async function BoardPage() {
-  const { data: posts, error } = await supabase
-    .from('posts')
-    .select(
-      `
-      id,
-      title,
-      is_anonymous,
-      like_count,
-      created_at,
-      users ( nickname )
-    `
-    )
-    .eq('board_type', 'wish')
-    .order('created_at', { ascending: false })
+type Post = {
+  id: string
+  title: string
+  is_anonymous: boolean
+  like_count: number
+  created_at: string
+  users: { nickname: string } | null
+}
 
-  const { data: topPosts } = await supabase
-    .from('posts')
-    .select('id, title, like_count')
-    .eq('board_type', 'wish')
-    .gt('like_count', 0)
-    .order('like_count', { ascending: false })
-    .limit(5)
+export default function BoardPage() {
+  const router = useRouter()
+  const [posts, setPosts] = useState<Post[]>([])
+  const [topPosts, setTopPosts] = useState<Post[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const load = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        router.push('/login')
+        return
+      }
+
+      const { data: postsData, error: postsError } = await supabase
+        .from('posts')
+        .select(
+          `
+          id,
+          title,
+          is_anonymous,
+          like_count,
+          created_at,
+          users ( nickname )
+        `
+        )
+        .eq('board_type', 'wish')
+        .order('created_at', { ascending: false })
+
+      if (postsError) {
+        setError(postsError.message)
+        setLoading(false)
+        return
+      }
+
+      const { data: topData } = await supabase
+        .from('posts')
+        .select('id, title, like_count, is_anonymous, created_at, users ( nickname )')
+        .eq('board_type', 'wish')
+        .gt('like_count', 0)
+        .order('like_count', { ascending: false })
+        .limit(5)
+
+      setPosts((postsData as unknown as Post[]) ?? [])
+      setTopPosts((topData as unknown as Post[]) ?? [])
+      setLoading(false)
+    }
+
+    load()
+  }, [router])
+
+  if (loading) {
+    return <div className="max-w-2xl mx-auto px-6 py-16 text-muted-foreground">불러오는 중...</div>
+  }
 
   if (error) {
     return (
       <div className="max-w-xl mx-auto px-6 py-16">
         <h1 className="font-serif text-xl font-bold text-danger">오류 발생 😢</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{error}</p>
       </div>
     )
   }
@@ -49,16 +97,13 @@ export default async function BoardPage() {
         </Link>
       </div>
 
-      {topPosts && topPosts.length > 0 && (
+      {topPosts.length > 0 && (
         <div className="mb-8 rounded-2xl border border-accent-soft-border bg-accent-soft p-5">
           <h2 className="font-serif text-lg font-bold mb-3">실시간 TOP {topPosts.length}</h2>
           <ul className="space-y-2.5">
             {topPosts.map((post, idx) => (
               <li key={post.id}>
-                <Link
-                  href={`/board/${post.id}`}
-                  className="flex items-center gap-3 group"
-                >
+                <Link href={`/board/${post.id}`} className="flex items-center gap-3 group">
                   <span className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
                     {idx + 1}
                   </span>
@@ -75,14 +120,14 @@ export default async function BoardPage() {
         </div>
       )}
 
-      {posts?.length === 0 && (
+      {posts.length === 0 && (
         <p className="rounded-2xl border border-dashed border-border-strong bg-surface px-5 py-8 text-center text-muted-foreground">
           아직 등록된 글이 없습니다.
         </p>
       )}
 
       <ul className="grid gap-3 sm:grid-cols-2">
-        {posts?.map((post) => (
+        {posts.map((post) => (
           <li key={post.id}>
             <Link
               href={`/board/${post.id}`}

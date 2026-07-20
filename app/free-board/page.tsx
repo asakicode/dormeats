@@ -1,41 +1,85 @@
-import { supabase } from '@/lib/supabase'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
 import { CATEGORY_STYLE, getCategoryLabel, type Category } from '@/lib/categories'
 
-export default async function FreeBoardPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string }>
-}) {
-  const { category } = await searchParams
+type Post = {
+  id: string
+  title: string
+  category: string | null
+  is_anonymous: boolean
+  like_count: number
+  created_at: string
+  users: { nickname: string } | null
+}
 
-  let query = supabase
-    .from('posts')
-    .select(
-      `
-      id,
-      title,
-      category,
-      is_anonymous,
-      like_count,
-      created_at,
-      users ( nickname )
-    `
-    )
-    .eq('board_type', 'free')
-    .order('created_at', { ascending: false })
+export default function FreeBoardPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const category = searchParams.get('category') ?? ''
 
-  if (category) {
-    query = query.eq('category', category)
+  const [posts, setPosts] = useState<Post[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const load = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        router.push('/login')
+        return
+      }
+
+      let query = supabase
+        .from('posts')
+        .select(
+          `
+          id,
+          title,
+          category,
+          is_anonymous,
+          like_count,
+          created_at,
+          users ( nickname )
+        `
+        )
+        .eq('board_type', 'free')
+        .order('created_at', { ascending: false })
+
+      if (category) {
+        query = query.eq('category', category)
+      }
+
+      const { data, error: fetchError } = await query
+
+      if (fetchError) {
+        setError(fetchError.message)
+        setLoading(false)
+        return
+      }
+
+      setPosts((data as unknown as Post[]) ?? [])
+      setLoading(false)
+    }
+
+    load()
+  }, [category, router])
+
+  if (loading) {
+    return <div className="max-w-2xl mx-auto px-6 py-16 text-muted-foreground">불러오는 중...</div>
   }
-
-  const { data: posts, error } = await query
 
   if (error) {
     return (
       <div className="max-w-xl mx-auto px-6 py-16">
         <h1 className="font-serif text-xl font-bold text-danger">오류 발생 😢</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{error}</p>
       </div>
     )
   }
@@ -82,14 +126,14 @@ export default async function FreeBoardPage({
         })}
       </div>
 
-      {posts?.length === 0 && (
+      {posts.length === 0 && (
         <p className="rounded-2xl border border-dashed border-border-strong bg-surface px-5 py-8 text-center text-muted-foreground">
           아직 등록된 글이 없습니다.
         </p>
       )}
 
       <ul className="grid gap-3 sm:grid-cols-2">
-        {posts?.map((post) => {
+        {posts.map((post) => {
           const style =
             post.category && post.category in CATEGORY_STYLE
               ? CATEGORY_STYLE[post.category as Category]

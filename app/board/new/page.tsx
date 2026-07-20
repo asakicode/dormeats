@@ -1,16 +1,27 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 export default function NewPostPage() {
   const router = useRouter()
+  const [checking, setChecking] = useState(true)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        router.push('/login')
+        return
+      }
+      setChecking(false)
+    })
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,6 +57,10 @@ export default function NewPostPage() {
     }
 
     router.push(`/board/${newPost.id}`)
+  }
+
+  if (checking) {
+    return <div className="max-w-2xl mx-auto px-6 py-16 text-muted-foreground">확인 중...</div>
   }
 
   return (

@@ -1,46 +1,90 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { notFound } from 'next/navigation'
 import LikeButton from '../../components/LikeButton'
 import CommentSection from '../../components/CommentSection'
 import DeletePostButton from '../../components/DeletePostButton'
+import { getCategoryLabel } from '@/lib/categories'
 
-const CATEGORY_LABEL: Record<string, string> = {
-  restaurant: '식당',
-  life: '생활',
-  delivery: '택배',
-  question: '질문',
+type Post = {
+  id: string
+  user_id: string
+  title: string
+  content: string
+  category: string | null
+  is_anonymous: boolean
+  like_count: number
+  created_at: string
+  users: { nickname: string } | null
 }
 
-export default async function FreePostDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = await params
-  const { data: post, error } = await supabase
-    .from('posts')
-    .select(
-      `
-      id,
-      user_id,
-      title,
-      content,
-      category,
-      is_anonymous,
-      like_count,
-      created_at,
-      users ( nickname )
-    `
-    )
-    .eq('id', id)
-    .single()
-  if (error || !post) {
-    notFound()
+export default function FreePostDetailPage() {
+  const params = useParams<{ id: string }>()
+  const router = useRouter()
+  const [post, setPost] = useState<Post | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [notFoundFlag, setNotFoundFlag] = useState(false)
+
+  useEffect(() => {
+    const load = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        router.push('/login')
+        return
+      }
+
+      const { data, error } = await supabase
+        .from('posts')
+        .select(
+          `
+          id,
+          user_id,
+          title,
+          content,
+          category,
+          is_anonymous,
+          like_count,
+          created_at,
+          users ( nickname )
+        `
+        )
+        .eq('id', params.id)
+        .single()
+
+      if (error || !data) {
+        setNotFoundFlag(true)
+        setLoading(false)
+        return
+      }
+
+      setPost(data as unknown as Post)
+      setLoading(false)
+    }
+
+    load()
+  }, [params.id, router])
+
+  if (loading) {
+    return <div className="max-w-2xl mx-auto px-6 py-16 text-muted-foreground">불러오는 중...</div>
   }
+
+  if (notFoundFlag || !post) {
+    return (
+      <div className="max-w-2xl mx-auto px-6 py-16 text-center text-muted-foreground">
+        게시글을 찾을 수 없습니다.
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-2xl mx-auto px-6 py-10">
       <span className="inline-block text-xs font-medium text-primary-hover mb-2">
-        [{CATEGORY_LABEL[post.category ?? ''] ?? '기타'}]
+        [{getCategoryLabel(post.category)}]
       </span>
       <h1 className="font-serif text-2xl font-bold tracking-tight mb-2">{post.title}</h1>
       <p className="text-sm text-muted-foreground mb-6">
@@ -56,7 +100,7 @@ export default async function FreePostDetailPage({
         <DeletePostButton postId={post.id} authorId={post.user_id} boardType="free" />
       </div>
       <hr className="my-8 border-border" />
-      <CommentSection postId={post.id} />
+      <CommentSection postId={post.id} authorId={post.user_id} />
     </div>
   )
 }
