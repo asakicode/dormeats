@@ -24,3 +24,23 @@ export function getKoreaToday(): Date {
   // koreaDateStr은 'YYYY-MM-DD' 형식
   return new Date(koreaDateStr + 'T00:00:00')
 }
+
+export function getCurrentMealType(): 'breakfast' | 'lunch' | 'dinner' {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(new Date())
+
+  const hour = Number(parts.find((p) => p.type === 'hour')?.value ?? '0')
+  const minute = Number(parts.find((p) => p.type === 'minute')?.value ?? '0')
+  const minutesNow = hour * 60 + minute
+
+  const breakfastEnd = 8 * 60 + 30 // 08:30
+  const lunchEnd = 13 * 60 // 13:00
+
+  if (minutesNow < breakfastEnd) return 'breakfast'
+  if (minutesNow < lunchEnd) return 'lunch'
+  return 'dinner'
+}
