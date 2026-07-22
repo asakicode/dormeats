@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { formatRelativeTime } from '@/lib/date'
 
 type Comment = {
   id: string
@@ -105,7 +106,7 @@ export default function CommentSection({
                   {c.is_anonymous ? '익명' : c.users?.nickname ?? '알 수 없음'}
                 </span>
                 <span className="text-muted-foreground ml-2 text-xs">
-                  {new Date(c.created_at).toLocaleString('ko-KR')}
+                  {formatRelativeTime(c.created_at)}
                 </span>
               </div>
               {currentUserId === c.user_id && (

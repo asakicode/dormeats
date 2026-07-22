@@ -44,3 +44,29 @@ export function getCurrentMealType(): 'breakfast' | 'lunch' | 'dinner' {
   if (minutesNow < lunchEnd) return 'lunch'
   return 'dinner'
 }
+
+export function formatRelativeTime(dateString: string): string {
+  const postDate = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - postDate.getTime()
+  const diffMinutes = Math.floor(diffMs / 60000)
+
+  if (diffMinutes < 1) return '방금'
+  if (diffMinutes < 60) return `${diffMinutes}분 전`
+
+  const dateFmt = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' } as const
+  const postDateStr = new Intl.DateTimeFormat('en-CA', dateFmt).format(postDate)
+  const nowDateStr = new Intl.DateTimeFormat('en-CA', dateFmt).format(now)
+
+  if (postDateStr === nowDateStr) {
+    return new Intl.DateTimeFormat('ko-KR', {
+      timeZone: 'Asia/Seoul',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(postDate)
+  }
+
+  const [, month, day] = postDateStr.split('-')
+  return `${month}/${day}`
+}

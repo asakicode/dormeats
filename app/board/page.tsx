@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { formatRelativeTime } from '@/lib/date'
 
 type Post = {
   id: string
@@ -142,7 +143,7 @@ export default function BoardPage() {
               <p className="text-sm text-muted-foreground mt-1.5">
                 {post.is_anonymous ? '익명' : post.users?.nickname ?? '알 수 없음'}
                 <span className="mx-1.5 text-border-strong">·</span>
-                {new Date(post.created_at).toLocaleDateString('ko-KR')}
+                {formatRelativeTime(post.created_at)}
               </p>
             </Link>
           </li>
