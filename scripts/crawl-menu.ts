@@ -19,6 +19,20 @@ function normalize(name: string): string {
   return name.replace(/\s+/g, '').trim()
 }
 
+// '&'로 시작하는 줄은 앞 메뉴의 연속(콤보 구성)이므로 앞 항목에 붙이기
+// 예: "청파래새우튀김" + "&마요소스" → "청파래새우튀김&마요소스"
+function mergeAmpersandContinuations(items: string[]): string[] {
+  const merged: string[] = []
+  for (const item of items) {
+    if (item.startsWith('&') && merged.length > 0) {
+      merged[merged.length - 1] = merged[merged.length - 1] + item
+    } else {
+      merged.push(item)
+    }
+  }
+  return merged
+}
+
 // 괄호가 여러 줄에 걸쳐 열려있으면 닫힐 때까지 계속 이어붙이기
 // 예: "셀프햄버거" + "(햄버거빵," + "양념함박패티" + "오이피클,소스,양상추)"
 //     → "셀프햄버거(햄버거빵, 양념함박패티 오이피클,소스,양상추)"
@@ -160,7 +174,7 @@ async function crawlWeek(monday: Date) {
         )
         .filter((s) => s.length > 0)
 
-      const items = mergeParenthesesItems(rawItems)
+      const items = mergeParenthesesItems(mergeAmpersandContinuations(rawItems))
 
       if (items.length === 0) continue
 
@@ -206,7 +220,26 @@ async function crawlWeek(monday: Date) {
           menuItemCache = [...menuItemCache, newMenuItem]
           console.log(`  신규 메뉴 등록: ${itemName}`)
         } else if (normalize(menuItem.name) !== normalize(itemName)) {
-          console.log(`  기존 메뉴로 매칭: "${itemName}" → "${menuItem.name}"`)
+          const normalizedExisting = normalize(menuItem.name)
+          const normalizedNew = normalize(itemName)
+
+          if (normalizedNew.length > normalizedExisting.length && normalizedNew.includes(normalizedExisting)) {
+            // 기존에 저장된 이름이 이번에 크롤링한 이름의 일부일 뿐이면(과거 파싱 버그 등) 더 완전한 이름으로 보강
+            const { error: updateError } = await supabase
+              .from('menu_items')
+              .update({ name: itemName })
+              .eq('id', menuItem.id)
+
+            if (updateError) {
+              console.error(`menu_items 이름 갱신 실패 (${itemName}):`, updateError.message)
+            } else {
+              console.log(`  메뉴명 보강: "${menuItem.name}" → "${itemName}"`)
+              menuItem = { ...menuItem, name: itemName }
+              menuItemCache = menuItemCache.map((m) => (m.id === menuItem!.id ? menuItem! : m))
+            }
+          } else {
+            console.log(`  기존 메뉴로 매칭: "${itemName}" → "${menuItem.name}"`)
+          }
         }
 
         const { error: linkError } = await supabase.from('meal_items').insert({
