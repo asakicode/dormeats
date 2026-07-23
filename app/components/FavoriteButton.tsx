@@ -4,7 +4,13 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Heart } from 'lucide-react'
 
-export default function FavoriteButton({ menuItemId }: { menuItemId: string }) {
+export default function FavoriteButton({
+  menuItemId,
+  onToggle,
+}: {
+  menuItemId: string
+  onToggle?: (favorited: boolean) => void
+}) {
   const [favorited, setFavorited] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -42,11 +48,13 @@ export default function FavoriteButton({ menuItemId }: { menuItemId: string }) {
         .eq('menu_item_id', menuItemId)
         .eq('user_id', userId)
       setFavorited(false)
+      onToggle?.(false)
     } else {
       await supabase
         .from('favorites')
         .insert({ menu_item_id: menuItemId, user_id: userId })
       setFavorited(true)
+      onToggle?.(true)
     }
     setLoading(false)
   }
