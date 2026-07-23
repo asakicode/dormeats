@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "overview": "tsx scripts/page-overview.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.7",
