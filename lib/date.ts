@@ -25,7 +25,7 @@ export function getKoreaToday(): Date {
   return new Date(koreaDateStr + 'T00:00:00')
 }
 
-export function getCurrentMealType(): 'breakfast' | 'lunch' | 'dinner' {
+export function getCurrentMealType(): 'breakfast' | 'lunch' | 'dinner' | null {
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Seoul',
     hour: '2-digit',
@@ -37,12 +37,39 @@ export function getCurrentMealType(): 'breakfast' | 'lunch' | 'dinner' {
   const minute = Number(parts.find((p) => p.type === 'minute')?.value ?? '0')
   const minutesNow = hour * 60 + minute
 
+  const breakfastStart = 7 * 60 // 07:00
   const breakfastEnd = 8 * 60 + 30 // 08:30
+  const lunchStart = 12 * 60 // 12:00
   const lunchEnd = 13 * 60 // 13:00
+  const dinnerStart = 18 * 60 + 30 // 18:30
+  const dinnerEnd = 20 * 60 // 20:00
 
-  if (minutesNow < breakfastEnd) return 'breakfast'
-  if (minutesNow < lunchEnd) return 'lunch'
-  return 'dinner'
+  if (minutesNow >= breakfastStart && minutesNow < breakfastEnd) return 'breakfast'
+  if (minutesNow >= lunchStart && minutesNow < lunchEnd) return 'lunch'
+  if (minutesNow >= dinnerStart && minutesNow < dinnerEnd) return 'dinner'
+  return null
+}
+
+export function getNextMealType(): { type: 'breakfast' | 'lunch' | 'dinner'; when: 'today' | 'tomorrow' } {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(new Date())
+
+  const hour = Number(parts.find((p) => p.type === 'hour')?.value ?? '0')
+  const minute = Number(parts.find((p) => p.type === 'minute')?.value ?? '0')
+  const minutesNow = hour * 60 + minute
+
+  const breakfastStart = 7 * 60 // 07:00
+  const lunchStart = 12 * 60 // 12:00
+  const dinnerStart = 18 * 60 + 30 // 18:30
+
+  if (minutesNow < breakfastStart) return { type: 'breakfast', when: 'today' }
+  if (minutesNow < lunchStart) return { type: 'lunch', when: 'today' }
+  if (minutesNow < dinnerStart) return { type: 'dinner', when: 'today' }
+  return { type: 'breakfast', when: 'tomorrow' }
 }
 
 export function formatRelativeTime(dateString: string): string {

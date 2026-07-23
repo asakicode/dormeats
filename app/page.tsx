@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import { getMondayOfWeek, formatDate, getKoreaToday, getCurrentMealType, formatRelativeTime } from '@/lib/date'
+import { getMondayOfWeek, formatDate, getKoreaToday, getCurrentMealType, getNextMealType, formatRelativeTime } from '@/lib/date'
 import { splitMenuName } from '@/lib/menu'
 import FavoriteButton from './components/FavoriteButton'
 import ReviewSection from './components/ReviewSection'
@@ -31,6 +31,7 @@ export default function Home() {
   const [weekDates, setWeekDates] = useState<string[]>([])
   const [selectedDate, setSelectedDate] = useState('')
   const [currentMealType, setCurrentMealType] = useState<string>('')
+  const [nextMealInfo, setNextMealInfo] = useState<{ type: string; when: 'today' | 'tomorrow' } | null>(null)
   const [mealMap, setMealMap] = useState<Record<string, Record<string, Meal>>>({})
   const [expandedMeal, setExpandedMeal] = useState<string>('')
   const [topPost, setTopPost] = useState<TopPost | null>(null)
@@ -48,16 +49,26 @@ export default function Home() {
         dates.push(formatDate(d))
       }
 
+      const currentMeal = getCurrentMealType()
+      const nextMeal = currentMeal ? null : getNextMealType()
+      const tomorrow = new Date(today)
+      tomorrow.setDate(today.getDate() + 1)
+      const tomorrowFormatted = formatDate(tomorrow)
+      const todayHasEnded = !currentMeal && nextMeal?.when === 'tomorrow'
+      const effectiveDate = todayHasEnded ? tomorrowFormatted : todayFormatted
+
       setTodayStr(todayFormatted)
       setWeekDates(dates)
-      setSelectedDate(todayFormatted)
-      setCurrentMealType(getCurrentMealType())
+      setSelectedDate(effectiveDate)
+      setCurrentMealType(currentMeal ?? '')
+      setNextMealInfo(nextMeal)
 
+      const queryEndDate = tomorrowFormatted > dates[6] ? tomorrowFormatted : dates[6]
       const { data: meals } = await supabase
         .from('meals')
         .select('id, meal_type, meal_date, meal_items ( display_order, menu_items ( id, name ) )')
         .gte('meal_date', dates[0])
-        .lte('meal_date', dates[6])
+        .lte('meal_date', queryEndDate)
         .eq('dorm', '도봉학사')
         .order('display_order', { referencedTable: 'meal_items' })
 
@@ -68,7 +79,7 @@ export default function Home() {
       }
       setMealMap(map)
 
-      setExpandedMeal(getCurrentMealType())
+      setExpandedMeal(currentMeal ?? nextMeal?.type ?? '')
 
       const { data: topPosts } = await supabase
         .from('posts')
@@ -88,20 +99,29 @@ export default function Home() {
     return <div className="max-w-xl mx-auto px-6 py-16 text-muted-foreground">불러오는 중...</div>
   }
 
+  const todayHasEnded = !currentMealType && nextMealInfo?.when === 'tomorrow'
+  const tomorrowStr = (() => {
+    if (!todayStr) return ''
+    const d = new Date(`${todayStr}T00:00:00`)
+    d.setDate(d.getDate() + 1)
+    return formatDate(d)
+  })()
+  const effectiveDate = todayHasEnded ? tomorrowStr : todayStr
   const dayMeals = mealMap[selectedDate] ?? {}
   const isViewingToday = selectedDate === todayStr
+  const isViewingEffectiveToday = selectedDate === effectiveDate
 
   return (
     <div className="max-w-xl mx-auto px-6 py-8">
       <div className="flex items-center gap-2 mb-1">
         <div className="bg-accent-soft p-1 rounded-2xl flex text-xs font-semibold flex-1">
           <button
-            onClick={() => { setView('today'); setSelectedDate(todayStr) }}
+            onClick={() => { setView('today'); setSelectedDate(effectiveDate) }}
             className={`flex-1 py-2 rounded-xl transition-colors ${
               view === 'today' ? 'bg-surface text-foreground shadow-sm font-bold' : 'text-muted-foreground'
             }`}
           >
-            오늘의 식단 ({todayStr.slice(5)})
+            오늘의 식단 ({effectiveDate.slice(5)})
           </button>
           <button
             onClick={() => setView('week')}
@@ -113,7 +133,10 @@ export default function Home() {
           </button>
         </div>
       </div>
-      <p className="text-xs text-muted-foreground mb-5 px-1">도봉학사</p>
+      <p className={`text-xs text-muted-foreground px-1 ${todayHasEnded ? 'mb-1' : 'mb-5'}`}>도봉학사</p>
+      {todayHasEnded && (
+        <p className="text-[11px] text-muted-foreground mb-5 px-1">내일 메뉴로 자동 전환됐어요</p>
+      )}
 
       {view === 'week' && (
         <div className="grid grid-cols-7 gap-1.5 mb-6">
@@ -143,7 +166,8 @@ export default function Home() {
       <div className="space-y-4">
         {MEAL_TYPE_ORDER.map((mealType) => {
           const meal = dayMeals[mealType]
-          const isCurrent = isViewingToday && mealType === currentMealType
+          const isCurrent = isViewingEffectiveToday && mealType === currentMealType
+          const isNextUp = isViewingEffectiveToday && !currentMealType && mealType === nextMealInfo?.type
           const isExpanded = mealType === expandedMeal
 
           if (!isExpanded) {
@@ -160,6 +184,11 @@ export default function Home() {
                     {isCurrent && (
                       <span className="text-[10px] font-bold text-primary-hover bg-accent-soft px-2 py-0.5 rounded-full">
                         지금
+                      </span>
+                    )}
+                    {isNextUp && (
+                      <span className="text-[10px] font-bold text-primary-hover border border-accent-soft-border px-2 py-0.5 rounded-full">
+                        다음
                       </span>
                     )}
                   </div>
@@ -212,7 +241,7 @@ export default function Home() {
             <div
               key={mealType}
               className={
-                isCurrent
+                isCurrent || isNextUp
                   ? 'rounded-2xl border border-accent-soft-border bg-accent-soft p-6 relative'
                   : 'rounded-2xl border border-border bg-surface p-5 relative'
               }
@@ -221,6 +250,11 @@ export default function Home() {
                 <span className="absolute top-0 right-5 -translate-y-1/2 bg-primary text-primary-foreground text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-white" />
                   지금 식사시간
+                </span>
+              )}
+              {isNextUp && (
+                <span className="absolute top-0 right-5 -translate-y-1/2 bg-surface border border-primary text-primary-hover text-[11px] font-bold px-3 py-1 rounded-full">
+                  식사 준비 중
                 </span>
               )}
               <div className="flex items-baseline gap-2 mb-4">
