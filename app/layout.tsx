@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Gothic_A1, Gowun_Batang } from "next/font/google";
+import { Gothic_A1, Gowun_Dodum } from "next/font/google";
 import "./globals.css";
 import Header from "./components/Header";
 import BottomTabBar from "./components/BottomTabBar";
@@ -9,10 +9,10 @@ const gothicA1 = Gothic_A1({
   subsets: ["latin"],
   weight: ["400", "500", "700", "800"],
 });
-const gowunBatang = Gowun_Batang({
+const gowunDodum = Gowun_Dodum({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: ["400"],
 });
 
 export const metadata: Metadata = {
@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${gothicA1.variable} ${gowunBatang.variable} h-full antialiased`}
+      className={`${gothicA1.variable} ${gowunDodum.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <Header />

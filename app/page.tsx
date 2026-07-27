@@ -156,7 +156,7 @@ export default function Home() {
                 }`}
               >
                 <span>{DAY_LABELS[i]}</span>
-                <span className="text-[10px] opacity-80">{dateStr.slice(5)}</span>
+                <span className="text-[11px] opacity-80">{dateStr.slice(5)}</span>
               </button>
             )
           })}
@@ -180,14 +180,14 @@ export default function Home() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-serif font-bold text-foreground">{MEAL_TYPE_LABEL[mealType]}</span>
-                    <span className="text-[11px] text-muted-foreground">{MEAL_TYPE_TIME[mealType]}</span>
+                    <span className="text-xs text-muted-foreground">{MEAL_TYPE_TIME[mealType]}</span>
                     {isCurrent && (
-                      <span className="text-[10px] font-bold text-primary-hover bg-accent-soft px-2 py-0.5 rounded-full">
+                      <span className="text-[11px] font-bold text-live bg-live/10 px-2 py-0.5 rounded-full">
                         지금
                       </span>
                     )}
                     {isNextUp && (
-                      <span className="text-[10px] font-bold text-primary-hover border border-accent-soft-border px-2 py-0.5 rounded-full">
+                      <span className="text-[11px] font-bold text-live border border-live/30 px-2 py-0.5 rounded-full">
                         다음
                       </span>
                     )}
@@ -225,7 +225,7 @@ export default function Home() {
                 <div>
                   <div>{main}</div>
                   {detail && (
-                    <div className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+                    <div className="text-xs text-muted-foreground mt-0.5 leading-snug">
                       {detail}
                     </div>
                   )}
@@ -247,13 +247,13 @@ export default function Home() {
               }
             >
               {isCurrent && (
-                <span className="absolute top-0 right-5 -translate-y-1/2 bg-primary text-primary-foreground text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                <span className="absolute top-0 right-5 -translate-y-1/2 bg-live text-white text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-white" />
                   지금 식사시간
                 </span>
               )}
               {isNextUp && (
-                <span className="absolute top-0 right-5 -translate-y-1/2 bg-surface border border-primary text-primary-hover text-[11px] font-bold px-3 py-1 rounded-full">
+                <span className="absolute top-0 right-5 -translate-y-1/2 bg-surface border border-live text-live text-[11px] font-bold px-3 py-1 rounded-full">
                   식사 준비 중
                 </span>
               )}
@@ -289,7 +289,7 @@ export default function Home() {
         <div className="mt-8">
           <div className="flex justify-between items-end mb-3 px-1">
             <div>
-              <p className="text-[11px] font-bold text-primary uppercase tracking-wide">Community</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Community</p>
               <h3 className="font-serif font-bold text-base text-foreground">실시간 희망메뉴 칠판 📌</h3>
             </div>
             <Link href="/board" className="text-xs font-semibold text-primary-hover">전체보기 →</Link>
@@ -300,15 +300,15 @@ export default function Home() {
             style={{ transform: 'rotate(-0.6deg)' }}
           >
             <div className="flex justify-between items-start mb-2">
-              <span className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-md">TOP 1 🔥</span>
-              <span className="text-[11px] text-muted-foreground">
+              <span className="bg-primary text-primary-foreground text-[11px] font-bold px-2 py-0.5 rounded-md">TOP 1 🔥</span>
+              <span className="text-xs text-muted-foreground">
                 {topPost.is_anonymous ? '익명' : topPost.users?.nickname ?? '알 수 없음'} · {formatRelativeTime(topPost.created_at)}
               </span>
             </div>
             <h4 className="font-bold text-sm text-foreground mb-1">{topPost.title}</h4>
             <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{topPost.content}</p>
             <div className="flex justify-end">
-              <span className="bg-surface border border-accent-soft-border px-2.5 py-1 rounded-full text-xs font-bold text-danger">
+              <span className="bg-surface border border-accent-soft-border px-2.5 py-1 rounded-full text-xs font-bold text-social">
                 ❤️ {topPost.like_count}
               </span>
             </div>

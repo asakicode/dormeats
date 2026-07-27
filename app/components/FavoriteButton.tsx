@@ -65,13 +65,13 @@ export default function FavoriteButton({
       disabled={loading}
       aria-label={favorited ? '즐겨찾기 해제' : '즐겨찾기 추가'}
       className={`flex h-8 w-8 items-center justify-center rounded-full transition-transform hover:scale-110 disabled:opacity-50 ${
-        favorited ? 'bg-danger/10' : 'hover:bg-accent-soft'
+        favorited ? 'bg-social/10' : 'hover:bg-accent-soft'
       }`}
     >
       <Heart
         size={16}
         strokeWidth={2.2}
-        className={favorited ? 'fill-danger text-danger' : 'text-muted-foreground'}
+        className={favorited ? 'fill-social text-social' : 'text-muted-foreground'}
       />
     </button>
   )
