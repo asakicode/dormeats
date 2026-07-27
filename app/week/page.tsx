@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { getMondayOfWeek, formatDate, getKoreaToday } from '@/lib/date'
+import { cleanMenuName } from '@/lib/menu'
 
 const MEAL_TYPE_LABEL: Record<string, string> = {
   breakfast: '아침',
@@ -63,7 +64,10 @@ export default function WeekPage() {
         if (!map[meal.meal_date]) map[meal.meal_date] = {}
         const items = [...meal.meal_items]
           .sort((a, b) => a.display_order - b.display_order)
-          .map((mi) => mi.menu_items?.name)
+          .map((mi) => {
+            const menuItem = mi.menu_items as unknown as { name: string } | null
+            return menuItem ? cleanMenuName(menuItem.name) : undefined
+          })
           .filter(Boolean) as string[]
         map[meal.meal_date][meal.meal_type] = items
       }

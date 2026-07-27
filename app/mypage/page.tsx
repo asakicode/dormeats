@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { cleanMenuName } from '@/lib/menu'
 
 type Post = {
   id: string
@@ -231,7 +232,7 @@ export default function MyPage() {
                   key={f.id}
                   className="border rounded-full px-3.5 py-1.5 text-sm bg-danger/10 border-danger/20 text-danger font-medium"
                 >
-                  ❤️ {f.menu_items?.name}
+                  ❤️ {f.menu_items ? cleanMenuName(f.menu_items.name) : ''}
                 </li>
               ))}
             </ul>
