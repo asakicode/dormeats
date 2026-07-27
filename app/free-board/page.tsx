@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -18,6 +18,18 @@ type Post = {
 }
 
 export default function FreeBoardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="max-w-2xl mx-auto px-6 py-16 text-muted-foreground">불러오는 중...</div>
+      }
+    >
+      <FreeBoardPageInner />
+    </Suspense>
+  )
+}
+
+function FreeBoardPageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const category = searchParams.get('category') ?? ''

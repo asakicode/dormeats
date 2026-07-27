@@ -5,8 +5,8 @@ import * as cheerio from 'cheerio'
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey)
 
 const MEAL_TYPE_MAP: Record<string, string> = {
   아침: 'breakfast',
@@ -241,6 +241,8 @@ async function crawlWeek(monday: Date) {
             console.log(`  기존 메뉴로 매칭: "${itemName}" → "${menuItem.name}"`)
           }
         }
+
+        if (!menuItem) continue
 
         const { error: linkError } = await supabase.from('meal_items').insert({
           meal_id: mealRow.id,
