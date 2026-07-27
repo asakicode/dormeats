@@ -11,14 +11,14 @@ import { formatRelativeTime } from '@/lib/date'
 
 type Post = {
   id: string
-  user_id: string
   title: string
   content: string
   category: string | null
   is_anonymous: boolean
   like_count: number
   created_at: string
-  users: { nickname: string } | null
+  is_owner: boolean
+  author_nickname: string | null
 }
 
 export default function FreePostDetailPage() {
@@ -40,18 +40,18 @@ export default function FreePostDetailPage() {
       }
 
       const { data, error } = await supabase
-        .from('posts')
+        .from('posts_view')
         .select(
           `
           id,
-          user_id,
           title,
           content,
           category,
           is_anonymous,
           like_count,
           created_at,
-          users ( nickname )
+          is_owner,
+          author_nickname
         `
         )
         .eq('id', params.id)
@@ -89,7 +89,7 @@ export default function FreePostDetailPage() {
       </span>
       <h1 className="font-serif text-2xl font-bold tracking-tight mb-2">{post.title}</h1>
       <p className="text-sm text-muted-foreground mb-6">
-        {post.is_anonymous ? '익명' : post.users?.nickname ?? '알 수 없음'}
+        {post.is_anonymous ? '익명' : post.author_nickname ?? '알 수 없음'}
         <span className="mx-1.5 text-border-strong">·</span>
         {formatRelativeTime(post.created_at)}
       </p>
@@ -97,11 +97,11 @@ export default function FreePostDetailPage() {
         {post.content}
       </p>
       <div className="flex items-center gap-4">
-        <LikeButton postId={post.id} initialCount={post.like_count} authorId={post.user_id} />
-        <DeletePostButton postId={post.id} authorId={post.user_id} boardType="free" />
+        <LikeButton postId={post.id} initialCount={post.like_count} />
+        <DeletePostButton postId={post.id} isOwner={post.is_owner} boardType="free" />
       </div>
       <hr className="my-8 border-border" />
-      <CommentSection postId={post.id} authorId={post.user_id} />
+      <CommentSection postId={post.id} />
     </div>
   )
 }

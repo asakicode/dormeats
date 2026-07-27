@@ -5,30 +5,23 @@ import { formatRelativeTime } from '@/lib/date'
 
 type Comment = {
   id: string
-  user_id: string
   content: string
   is_anonymous: boolean
   created_at: string
-  users: { nickname: string } | null
+  is_owner: boolean
+  author_nickname: string | null
 }
 
-export default function CommentSection({
-  postId,
-  authorId,
-}: {
-  postId: string
-  authorId: string
-}) {
+export default function CommentSection({ postId }: { postId: string }) {
   const [comments, setComments] = useState<Comment[]>([])
   const [content, setContent] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   const loadComments = async () => {
     const { data } = await supabase
-      .from('comments')
-      .select('id, user_id, content, is_anonymous, created_at, users ( nickname )')
+      .from('comments_view')
+      .select('id, content, is_anonymous, created_at, is_owner, author_nickname')
       .eq('post_id', postId)
       .order('created_at', { ascending: true })
     setComments((data as unknown as Comment[]) ?? [])
@@ -36,9 +29,6 @@ export default function CommentSection({
 
   useEffect(() => {
     loadComments()
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setCurrentUserId(user?.id ?? null)
-    })
   }, [postId])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,15 +50,11 @@ export default function CommentSection({
       is_anonymous: isAnonymous,
     })
 
-    // 본인 글이 아닐 때만 알림 생성
-    if (authorId !== user.id) {
-      await supabase.from('notifications').insert({
-        user_id: authorId,
-        actor_id: user.id,
-        type: 'comment',
-        post_id: postId,
-      })
-    }
+    await supabase.rpc('notify_post_owner', {
+      p_post_id: postId,
+      p_notif_type: 'comment',
+      p_is_anonymous: isAnonymous,
+    })
 
     setContent('')
     setIsAnonymous(false)
@@ -79,15 +65,14 @@ export default function CommentSection({
   const handleDelete = async (comment: Comment) => {
     if (!confirm('댓글을 삭제하시겠습니까?')) return
 
-    await supabase.from('deleted_comments_log').insert({
-      original_comment_id: comment.id,
-      post_id: postId,
-      user_id: comment.user_id,
-      content: comment.content,
-      is_anonymous: comment.is_anonymous,
+    const { error } = await supabase.rpc('delete_own_comment', {
+      p_comment_id: comment.id,
     })
 
-    await supabase.from('comments').delete().eq('id', comment.id)
+    if (error) {
+      alert('삭제 실패: ' + error.message)
+      return
+    }
 
     await loadComments()
   }
@@ -103,13 +88,13 @@ export default function CommentSection({
             <div className="flex justify-between items-start">
               <div>
                 <span className="font-medium">
-                  {c.is_anonymous ? '익명' : c.users?.nickname ?? '알 수 없음'}
+                  {c.is_anonymous ? '익명' : c.author_nickname ?? '알 수 없음'}
                 </span>
                 <span className="text-muted-foreground ml-2 text-xs">
                   {formatRelativeTime(c.created_at)}
                 </span>
               </div>
-              {currentUserId === c.user_id && (
+              {c.is_owner && (
                 <button
                   onClick={() => handleDelete(c)}
                   className="text-xs text-danger underline"

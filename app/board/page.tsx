@@ -12,7 +12,7 @@ type Post = {
   is_anonymous: boolean
   like_count: number
   created_at: string
-  users: { nickname: string } | null
+  author_nickname: string | null
 }
 
 export default function BoardPage() {
@@ -34,7 +34,7 @@ export default function BoardPage() {
       }
 
       const { data: postsData, error: postsError } = await supabase
-        .from('posts')
+        .from('posts_view')
         .select(
           `
           id,
@@ -42,7 +42,7 @@ export default function BoardPage() {
           is_anonymous,
           like_count,
           created_at,
-          users ( nickname )
+          author_nickname
         `
         )
         .eq('board_type', 'wish')
@@ -55,8 +55,8 @@ export default function BoardPage() {
       }
 
       const { data: topData } = await supabase
-        .from('posts')
-        .select('id, title, like_count, is_anonymous, created_at, users ( nickname )')
+        .from('posts_view')
+        .select('id, title, like_count, is_anonymous, created_at, author_nickname')
         .eq('board_type', 'wish')
         .gt('like_count', 0)
         .order('like_count', { ascending: false })
@@ -141,7 +141,7 @@ export default function BoardPage() {
                 </span>
               </div>
               <p className="text-sm text-muted-foreground mt-1.5">
-                {post.is_anonymous ? '익명' : post.users?.nickname ?? '알 수 없음'}
+                {post.is_anonymous ? '익명' : post.author_nickname ?? '알 수 없음'}
                 <span className="mx-1.5 text-border-strong">·</span>
                 {formatRelativeTime(post.created_at)}
               </p>

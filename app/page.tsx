@@ -23,7 +23,7 @@ const DAY_LABELS = ['월', '화', '수', '목', '금', '토', '일']
 
 type MealItem = { display_order: number; menu_items: { id: string; name: string } | null }
 type Meal = { id: string; meal_type: string; meal_date: string; meal_items: MealItem[] }
-type TopPost = { id: string; title: string; content: string; like_count: number; is_anonymous: boolean; created_at: string; users: { nickname: string } | null }
+type TopPost = { id: string; title: string; content: string; like_count: number; is_anonymous: boolean; created_at: string; author_nickname: string | null }
 
 export default function Home() {
   const [view, setView] = useState<'today' | 'week'>('today')
@@ -82,8 +82,8 @@ export default function Home() {
       setExpandedMeal(currentMeal ?? nextMeal?.type ?? '')
 
       const { data: topPosts } = await supabase
-        .from('posts')
-        .select('id, title, content, like_count, is_anonymous, created_at, users ( nickname )')
+        .from('posts_view')
+        .select('id, title, content, like_count, is_anonymous, created_at, author_nickname')
         .eq('board_type', 'wish')
         .gt('like_count', 0)
         .order('like_count', { ascending: false })
@@ -302,7 +302,7 @@ export default function Home() {
             <div className="flex justify-between items-start mb-2">
               <span className="bg-primary text-primary-foreground text-[11px] font-bold px-2 py-0.5 rounded-md">TOP 1 🔥</span>
               <span className="text-xs text-muted-foreground">
-                {topPost.is_anonymous ? '익명' : topPost.users?.nickname ?? '알 수 없음'} · {formatRelativeTime(topPost.created_at)}
+                {topPost.is_anonymous ? '익명' : topPost.author_nickname ?? '알 수 없음'} · {formatRelativeTime(topPost.created_at)}
               </span>
             </div>
             <h4 className="font-bold text-sm text-foreground mb-1">{topPost.title}</h4>

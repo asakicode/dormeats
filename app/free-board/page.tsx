@@ -14,7 +14,7 @@ type Post = {
   is_anonymous: boolean
   like_count: number
   created_at: string
-  users: { nickname: string } | null
+  author_nickname: string | null
 }
 
 export default function FreeBoardPage() {
@@ -38,7 +38,7 @@ export default function FreeBoardPage() {
       }
 
       let query = supabase
-        .from('posts')
+        .from('posts_view')
         .select(
           `
           id,
@@ -47,7 +47,7 @@ export default function FreeBoardPage() {
           is_anonymous,
           like_count,
           created_at,
-          users ( nickname )
+          author_nickname
         `
         )
         .eq('board_type', 'free')
@@ -161,7 +161,7 @@ export default function FreeBoardPage() {
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1.5">
-                  {post.is_anonymous ? '익명' : post.users?.nickname ?? '알 수 없음'}
+                  {post.is_anonymous ? '익명' : post.author_nickname ?? '알 수 없음'}
                   <span className="mx-1.5 text-border-strong">·</span>
                   {formatRelativeTime(post.created_at)}
                 </p>

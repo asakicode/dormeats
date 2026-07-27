@@ -19,7 +19,8 @@ type Comment = {
   content: string
   created_at: string
   post_id: string
-  posts: { title: string; board_type: string } | null
+  post_title: string | null
+  post_board_type: string | null
 }
 
 type Favorite = {
@@ -74,16 +75,16 @@ export default function MyPage() {
       setDorm(profile?.dorm ?? '도봉학사')
 
       const { data: myPosts } = await supabase
-        .from('posts')
+        .from('posts_view')
         .select('id, title, board_type, like_count, created_at')
-        .eq('user_id', user.id)
+        .eq('is_owner', true)
         .order('created_at', { ascending: false })
       setPosts(myPosts ?? [])
 
       const { data: myComments } = await supabase
-        .from('comments')
-        .select('id, content, created_at, post_id, posts ( title, board_type )')
-        .eq('user_id', user.id)
+        .from('comments_view')
+        .select('id, content, created_at, post_id, post_title, post_board_type')
+        .eq('is_owner', true)
         .order('created_at', { ascending: false })
       setComments((myComments as unknown as Comment[]) ?? [])
 
@@ -205,10 +206,10 @@ export default function MyPage() {
               {comments.map((c) => (
                 <li key={c.id}>
                   <Link
-                    href={boardLink(c.posts?.board_type ?? 'wish', c.post_id)}
+                    href={boardLink(c.post_board_type ?? 'wish', c.post_id)}
                     className="block rounded-2xl border border-border bg-surface p-4 hover:border-border-strong transition-colors"
                   >
-                    <p className="text-xs text-muted-foreground">{c.posts?.title ?? '삭제된 글'}</p>
+                    <p className="text-xs text-muted-foreground">{c.post_title ?? '삭제된 글'}</p>
                     <p className="text-sm mt-1">{c.content}</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {new Date(c.created_at).toLocaleDateString('ko-KR')}

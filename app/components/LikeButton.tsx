@@ -6,11 +6,9 @@ import { supabase } from '@/lib/supabase'
 export default function LikeButton({
   postId,
   initialCount,
-  authorId,
 }: {
   postId: string
   initialCount: number
-  authorId: string
 }) {
   const [liked, setLiked] = useState(false)
   const [count, setCount] = useState(initialCount)
@@ -62,15 +60,10 @@ export default function LikeButton({
       setLiked(true)
       setCount((c) => c + 1)
 
-      // 본인 글이 아닐 때만 알림 생성
-      if (authorId !== userId) {
-        await supabase.from('notifications').insert({
-          user_id: authorId,
-          actor_id: userId,
-          type: 'like',
-          post_id: postId,
-        })
-      }
+      await supabase.rpc('notify_post_owner', {
+        p_post_id: postId,
+        p_notif_type: 'like',
+      })
 
       router.refresh()
     }

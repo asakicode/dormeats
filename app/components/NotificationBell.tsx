@@ -11,8 +11,9 @@ type Notification = {
   post_id: string
   is_read: boolean
   created_at: string
-  actor: { nickname: string } | null
-  posts: { title: string; board_type: string } | null
+  actor_nickname: string | null
+  post_title: string | null
+  post_board_type: string | null
 }
 
 const boardLink = (boardType: string, id: string) =>
@@ -24,13 +25,10 @@ export default function NotificationBell() {
   const [userId, setUserId] = useState<string | null>(null)
   const ref = useRef<HTMLDivElement>(null)
 
-  const load = async (uid: string) => {
+  const load = async () => {
     const { data } = await supabase
-      .from('notifications')
-      .select(
-        'id, type, post_id, is_read, created_at, actor:actor_id ( nickname ), posts ( title, board_type )'
-      )
-      .eq('user_id', uid)
+      .from('notifications_view')
+      .select('id, type, post_id, is_read, created_at, actor_nickname, post_title, post_board_type')
       .order('created_at', { ascending: false })
       .limit(20)
 
@@ -41,7 +39,7 @@ export default function NotificationBell() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
       setUserId(user.id)
-      load(user.id)
+      load()
     })
   }, [])
 
@@ -94,17 +92,17 @@ export default function NotificationBell() {
               {notifications.map((n) => (
                 <li key={n.id} className="border-b border-border last:border-b-0">
                   <Link
-                    href={boardLink(n.posts?.board_type ?? 'wish', n.post_id)}
+                    href={boardLink(n.post_board_type ?? 'wish', n.post_id)}
                     onClick={() => setOpen(false)}
                     className="block p-3 text-sm hover:bg-surface-hover transition-colors"
                   >
                     <span className="font-medium text-foreground">
-                      {n.actor?.nickname ?? '누군가'}
+                      {n.actor_nickname ?? '익명'}
                     </span>
                     <span className="text-foreground/80">
                       {n.type === 'comment' ? '님이 댓글을 남겼습니다: ' : '님이 좋아요를 눌렀습니다: '}
                     </span>
-                    <span className="text-muted-foreground">{n.posts?.title}</span>
+                    <span className="text-muted-foreground">{n.post_title}</span>
                   </Link>
                 </li>
               ))}
