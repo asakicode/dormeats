@@ -4,14 +4,14 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { usernameToEmail } from '@/lib/auth'
 
 export default function SignupPage() {
   const router = useRouter()
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [nickname, setNickname] = useState('')
   const [error, setError] = useState('')
+  const [done, setDone] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -19,12 +19,13 @@ export default function SignupPage() {
     setError('')
     setLoading(true)
 
-    const email = usernameToEmail(username)
-
-    // 1. Supabase Auth로 계정 생성
+    // Supabase Auth로 계정 생성 (이메일 인증 메일 발송)
+    // users 프로필 row는 DB의 handle_new_user() 트리거가 nickname을 받아 자동 생성함
+    // (signUp 직후엔 세션이 없어 auth.uid()가 비어있으므로, 클라이언트에서 직접 insert할 수 없음)
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
+      options: { data: { nickname } },
     })
 
     if (signUpError || !data.user) {
@@ -33,19 +34,22 @@ export default function SignupPage() {
       return
     }
 
-    // 2. users 프로필 row 생성 (Auth의 id와 동일하게)
-    const { error: profileError } = await supabase.from('users').insert({
-      id: data.user.id,
-      nickname,
-    })
+    setDone(true)
+    setLoading(false)
+  }
 
-    if (profileError) {
-      setError(profileError.message)
-      setLoading(false)
-      return
-    }
-
-    router.push('/')
+  if (done) {
+    return (
+      <div className="max-w-sm mx-auto px-6 py-16 text-center">
+        <h1 className="font-serif text-2xl font-bold tracking-tight mb-3">이메일을 확인해주세요</h1>
+        <p className="text-sm text-muted-foreground mb-7">
+          {email}로 인증 메일을 보냈어요. 메일 속 링크를 눌러 인증을 완료하면 로그인할 수 있어요.
+        </p>
+        <Link href="/login" className="text-primary font-medium hover:text-primary-hover transition-colors">
+          로그인하러 가기
+        </Link>
+      </div>
+    )
   }
 
   return (
@@ -62,15 +66,13 @@ export default function SignupPage() {
         className="space-y-4 rounded-2xl border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(118,85,42,0.04)]"
       >
         <div>
-          <label className="block text-sm font-medium mb-1.5">아이디</label>
+          <label className="block text-sm font-medium mb-1.5">이메일</label>
           <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full border border-border rounded-xl px-3.5 py-2.5 outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
             required
-            pattern="[a-zA-Z0-9]+"
-            title="영문/숫자만 입력해주세요"
           />
         </div>
         <div>
@@ -81,7 +83,7 @@ export default function SignupPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full border border-border rounded-xl px-3.5 py-2.5 outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
             required
-            minLength={6}
+            minLength={8}
           />
         </div>
         <div>

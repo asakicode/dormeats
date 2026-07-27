@@ -4,11 +4,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { usernameToEmail } from '@/lib/auth'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -18,15 +17,17 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
 
-    const email = usernameToEmail(username)
-
     const { error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
     if (loginError) {
-      setError('아이디 또는 비밀번호가 올바르지 않습니다.')
+      setError(
+        loginError.message.includes('Email not confirmed')
+          ? '이메일 인증을 아직 완료하지 않았어요. 메일함을 확인해주세요.'
+          : '이메일 또는 비밀번호가 올바르지 않습니다.'
+      )
       setLoading(false)
       return
     }
@@ -41,17 +42,22 @@ export default function LoginPage() {
       <p className="text-sm text-muted-foreground mb-9">도봉학사 계정으로 로그인하세요</p>
       <form onSubmit={handleLogin} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1.5">아이디</label>
+          <label className="block text-sm font-medium mb-1.5">이메일</label>
           <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full border border-border rounded-xl px-3.5 py-2.5 outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1.5">비밀번호</label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="block text-sm font-medium">비밀번호</label>
+            <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+              비밀번호를 잊으셨나요?
+            </Link>
+          </div>
           <input
             type="password"
             value={password}
