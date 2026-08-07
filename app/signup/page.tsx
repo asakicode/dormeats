@@ -19,7 +19,7 @@ export default function SignupPage() {
     setError('')
     setLoading(true)
 
-    // Supabase Auth로 계정 생성 (이메일 인증 메일 발송)
+    // Supabase Auth로 계정 생성
     // users 프로필 row는 DB의 handle_new_user() 트리거가 nickname을 받아 자동 생성함
     // (signUp 직후엔 세션이 없어 auth.uid()가 비어있으므로, 클라이언트에서 직접 insert할 수 없음)
     const { data, error: signUpError } = await supabase.auth.signUp({
@@ -31,6 +31,13 @@ export default function SignupPage() {
     if (signUpError || !data.user) {
       setError(signUpError?.message ?? '회원가입 실패')
       setLoading(false)
+      return
+    }
+
+    // Confirm email이 꺼져 있으면 signUp이 세션을 바로 내려줌 → 인증 대기 없이 로그인 처리
+    if (data.session) {
+      router.push('/')
+      router.refresh()
       return
     }
 
