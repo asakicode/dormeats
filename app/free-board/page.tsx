@@ -130,7 +130,7 @@ function FreeBoardPageInner() {
               className={`px-3.5 py-1.5 rounded-full border font-medium transition-colors ${
                 isActive
                   ? `${style.activeBg} border-transparent text-white`
-                  : `${style.bg} ${style.text} border-transparent hover:opacity-80`
+                  : `${style.bg} ${style.text} ${style.border} hover:opacity-80`
               }`}
             >
               {style.label}

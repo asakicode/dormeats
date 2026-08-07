@@ -166,7 +166,7 @@ export default function MyPage() {
       {activeTab === 'posts' && (
         <>
           {posts.length === 0 ? (
-            <p className="text-gray-400 text-sm">아직 작성한 글이 없습니다.</p>
+            <p className="text-muted-foreground text-sm">아직 작성한 글이 없습니다.</p>
           ) : (
             <ul className="space-y-2">
               {posts.map((post) => (
@@ -200,7 +200,7 @@ export default function MyPage() {
       {activeTab === 'comments' && (
         <>
           {comments.length === 0 ? (
-            <p className="text-gray-400 text-sm">아직 작성한 댓글이 없습니다.</p>
+            <p className="text-muted-foreground text-sm">아직 작성한 댓글이 없습니다.</p>
           ) : (
             <ul className="space-y-2">
               {comments.map((c) => (
@@ -225,7 +225,7 @@ export default function MyPage() {
       {activeTab === 'favorites' && (
         <>
           {favorites.length === 0 ? (
-            <p className="text-gray-400 text-sm">아직 즐겨찾기한 메뉴가 없습니다.</p>
+            <p className="text-muted-foreground text-sm">아직 즐겨찾기한 메뉴가 없습니다.</p>
           ) : (
             <ul className="flex flex-wrap gap-2">
               {favorites.map((f) => (
