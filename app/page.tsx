@@ -240,11 +240,7 @@ export default function Home() {
           return (
             <div
               key={mealType}
-              className={
-                isCurrent || isNextUp
-                  ? 'rounded-2xl border border-accent-soft-border bg-accent-soft p-6 relative'
-                  : 'rounded-2xl border border-border bg-surface p-5 relative'
-              }
+              className="rounded-2xl border border-accent-soft-border bg-accent-soft p-6 relative"
             >
               {isCurrent && (
                 <span className="absolute top-0 right-5 -translate-y-1/2 bg-live text-white text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
