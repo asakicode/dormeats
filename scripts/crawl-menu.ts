@@ -3,6 +3,7 @@ config({ path: '.env.local' })
 
 import * as cheerio from 'cheerio'
 import { createClient } from '@supabase/supabase-js'
+import { getKoreaToday, getMondayOfWeek, formatDate } from '../lib/date'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -98,18 +99,6 @@ function findMatchingMenuItem(
   }
 
   return null
-}
-
-function getMondayOfWeek(date: Date): Date {
-  const day = date.getDay()
-  const diff = day === 0 ? -6 : 1 - day
-  const monday = new Date(date)
-  monday.setDate(date.getDate() + diff)
-  return monday
-}
-
-function formatDate(date: Date): string {
-  return date.toISOString().split('T')[0]
 }
 
 async function crawlWeek(monday: Date) {
@@ -264,6 +253,6 @@ async function crawlWeek(monday: Date) {
   console.log(`\n완료! 총 ${totalInserted}개 메뉴 항목이 저장됐습니다.`)
 }
 
-const today = new Date()
+const today = getKoreaToday()
 const monday = getMondayOfWeek(today)
 crawlWeek(monday)
