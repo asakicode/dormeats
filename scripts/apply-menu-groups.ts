@@ -4,6 +4,7 @@ config({ path: '.env.local' })
 import { readFileSync } from 'node:fs'
 import { createClient } from '@supabase/supabase-js'
 import { planGroupSync, type GroupFile } from '../lib/menu-group'
+import { fetchAllRows } from '../lib/fetch-all'
 
 // data/menu-groups.json 을 DB에 반영한다. --dry-run 이면 바뀔 내용만 출력
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
@@ -12,11 +13,13 @@ const dryRun = process.argv.includes('--dry-run')
 async function main() {
   const file: GroupFile = JSON.parse(readFileSync('data/menu-groups.json', 'utf8'))
 
-  const { data: items, error: itemsError } = await supabase.from('menu_items').select('id, name, group_id')
-  const { data: groups, error: groupsError } = await supabase.from('menu_groups').select('id, name')
-  if (itemsError || groupsError || !items || !groups) {
-    throw new Error(`조회 실패: ${itemsError?.message ?? groupsError?.message}`)
-  }
+  // 일부만 읽으면 멀쩡한 묶음이 비어 보여 지워지므로 반드시 전부 읽는다
+  const items = await fetchAllRows<{ id: string; name: string; group_id: string | null }>((from, to) =>
+    supabase.from('menu_items').select('id, name, group_id').order('id').range(from, to)
+  )
+  const groups = await fetchAllRows<{ id: string; name: string }>((from, to) =>
+    supabase.from('menu_groups').select('id, name').order('id').range(from, to)
+  )
 
   const plan = planGroupSync(file, items, groups)
 

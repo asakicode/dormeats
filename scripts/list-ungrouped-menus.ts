@@ -4,37 +4,26 @@ config({ path: '.env.local' })
 import { readFileSync } from 'node:fs'
 import { createClient } from '@supabase/supabase-js'
 import { findAutoGroupedNotInFile, type GroupFile } from '../lib/menu-group'
+import { fetchAllRows } from '../lib/fetch-all'
 
 // 묶음이 없는 메뉴를 자주 나온 순으로 보여준다 ("새 메뉴 묶어줘" 할 때 사용)
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-const PAGE_SIZE = 1000
-
-// supabase 기본 조회 한도(1000행)를 넘는 meal_items를 나눠서 모두 가져온다
-async function fetchAllMealItemIds(): Promise<string[]> {
-  const ids: string[] = []
-  for (let from = 0; ; from += PAGE_SIZE) {
-    const { data, error } = await supabase
-      .from('meal_items')
-      .select('menu_item_id')
-      .range(from, from + PAGE_SIZE - 1)
-    if (error) throw new Error(`meal_items 조회 실패: ${error.message}`)
-    ids.push(...data.map((row) => row.menu_item_id))
-    if (data.length < PAGE_SIZE) return ids
-  }
-}
-
 async function main() {
   const file: GroupFile = JSON.parse(readFileSync('data/menu-groups.json', 'utf8'))
 
-  const { data: items, error: itemsError } = await supabase.from('menu_items').select('id, name, group_id')
-  const { data: groups, error: groupsError } = await supabase.from('menu_groups').select('id, name')
-  if (itemsError || groupsError || !items || !groups) {
-    throw new Error(`조회 실패: ${itemsError?.message ?? groupsError?.message}`)
-  }
+  const items = await fetchAllRows<{ id: string; name: string; group_id: string | null }>((from, to) =>
+    supabase.from('menu_items').select('id, name, group_id').order('id').range(from, to)
+  )
+  const groups = await fetchAllRows<{ id: string; name: string }>((from, to) =>
+    supabase.from('menu_groups').select('id, name').order('id').range(from, to)
+  )
+  const mealItems = await fetchAllRows<{ menu_item_id: string }>((from, to) =>
+    supabase.from('meal_items').select('menu_item_id').order('id').range(from, to)
+  )
 
   const counts = new Map<string, number>()
-  for (const id of await fetchAllMealItemIds()) counts.set(id, (counts.get(id) ?? 0) + 1)
+  for (const { menu_item_id } of mealItems) counts.set(menu_item_id, (counts.get(menu_item_id) ?? 0) + 1)
 
   const ungrouped = items
     .filter((item) => !item.group_id)

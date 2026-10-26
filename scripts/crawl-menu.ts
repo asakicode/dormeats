@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 import { getKoreaToday, getMondayOfWeek, formatDate, getWeekMondaysFrom } from '../lib/date'
 import { appendFileSync } from 'node:fs'
 import { findExactMenuItem, findGroupIdByKey } from '../lib/menu-group'
+import { fetchAllRows } from '../lib/fetch-all'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -75,11 +76,9 @@ function mergeParenthesesItems(items: string[]): string[] {
 const newMenuNames: string[] = []
 
 async function crawlWeek(monday: Date) {
-  const { data: existingMenuItems } = await supabase
-    .from('menu_items')
-    .select('id, name, group_id')
-
-  let menuItemCache = existingMenuItems ?? []
+  let menuItemCache = await fetchAllRows<{ id: string; name: string; group_id: string | null }>((from, to) =>
+    supabase.from('menu_items').select('id, name, group_id').order('id').range(from, to)
+  )
 
   const sunday = new Date(monday)
   sunday.setDate(monday.getDate() + 6)
