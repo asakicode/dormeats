@@ -102,7 +102,7 @@ export default function MealSection({
                   <div>{main}</div>
                   {detail && <div className="mt-0.5 text-[11px] leading-snug text-muted-foreground">{detail}</div>}
                 </div>
-                <FavoriteButton menuItemId={item.menu_items.id} />
+                <FavoriteButton menuItemId={item.menu_items.id} groupId={item.menu_items.group_id} />
               </div>
             )
           })}

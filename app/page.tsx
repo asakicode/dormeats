@@ -9,7 +9,7 @@ import DateStrip from './components/home/DateStrip'
 import MealSection from './components/home/MealSection'
 import TopWishPost from './components/home/TopWishPost'
 
-export type MealItem = { display_order: number; menu_items: { id: string; name: string } | null }
+export type MealItem = { display_order: number; menu_items: { id: string; name: string; group_id: string | null } | null }
 export type Meal = { id: string; meal_type: string; meal_date: string; meal_items: MealItem[] }
 export type TopPost = { id: string; title: string; content: string; like_count: number; is_anonymous: boolean; created_at: string; author_nickname: string | null }
 
@@ -33,7 +33,7 @@ export default function Home() {
       const dates = getWeekDates(weekStart)
       const { data: meals } = await supabase
         .from('meals')
-        .select('id, meal_type, meal_date, meal_items ( display_order, menu_items ( id, name ) )')
+        .select('id, meal_type, meal_date, meal_items ( display_order, menu_items ( id, name, group_id ) )')
         .gte('meal_date', dates[0])
         .lte('meal_date', dates[6])
         .eq('dorm', '도봉학사')

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getKoreaToday, formatDate } from '@/lib/date'
 import { splitMenuName } from '@/lib/menu'
+import { computeNextByGroup, groupFavorites, type NextOccurrence } from '@/lib/menu-group'
 import { Heart } from 'lucide-react'
 import FavoriteButton from '../components/FavoriteButton'
 import EmptyState from '../components/EmptyState'
@@ -14,16 +15,16 @@ const MEAL_TYPE_LABEL: Record<string, string> = {
   lunch: '점심',
   dinner: '저녁',
 }
-const MEAL_TYPE_ORDER = ['breakfast', 'lunch', 'dinner']
 const DOW_LABELS = ['일', '월', '화', '수', '목', '금', '토']
 const UNDO_DURATION_MS = 5000
 
 type Favorite = {
   id: string
-  menu_items: { id: string; name: string } | null
+  menu_items: { id: string; name: string; group_id: string | null } | null
 }
 
-type NextOccurrence = { meal_date: string; meal_type: string; rank: number }
+type FavoriteRow = ReturnType<typeof groupFavorites<Favorite>>[number]
+type RemovedToast = { row: FavoriteRow; menuItemIds: string[] }
 
 function describeOccurrence(dateStr: string, mealType: string, todayStr: string, tomorrowStr: string): string {
   const label = MEAL_TYPE_LABEL[mealType] ?? mealType
@@ -37,23 +38,27 @@ function describeOccurrence(dateStr: string, mealType: string, todayStr: string,
   return `${shortDate}(${dow}) ${label}`
 }
 
-function sortByNextOccurrence(favs: Favorite[], nextMap: Record<string, NextOccurrence>): Favorite[] {
-  return [...favs].sort((a, b) => {
-    const rankA = a.menu_items ? nextMap[a.menu_items.id]?.rank ?? Infinity : Infinity
-    const rankB = b.menu_items ? nextMap[b.menu_items.id]?.rank ?? Infinity : Infinity
-    return rankA - rankB
-  })
+function sortByNextOccurrence(rows: FavoriteRow[], nextMap: Record<string, NextOccurrence>): FavoriteRow[] {
+  return [...rows].sort((a, b) => (nextMap[a.key]?.rank ?? Infinity) - (nextMap[b.key]?.rank ?? Infinity))
+}
+
+async function fetchFavoriteRows(userId: string): Promise<FavoriteRow[]> {
+  const { data } = await supabase
+    .from('favorites')
+    .select('id, menu_items ( id, name, group_id )')
+    .eq('user_id', userId)
+  return groupFavorites((data as unknown as Favorite[]) ?? [])
 }
 
 export default function FavoritesPage() {
   const router = useRouter()
-  const [favorites, setFavorites] = useState<Favorite[]>([])
-  const [nextByMenuItem, setNextByMenuItem] = useState<Record<string, NextOccurrence>>({})
+  const [favorites, setFavorites] = useState<FavoriteRow[]>([])
+  const [nextByGroup, setNextByGroup] = useState<Record<string, NextOccurrence>>({})
   const [todayStr, setTodayStr] = useState('')
   const [tomorrowStr, setTomorrowStr] = useState('')
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
-  const [removedToast, setRemovedToast] = useState<Favorite | null>(null)
+  const [removedToast, setRemovedToast] = useState<RemovedToast | null>(null)
   const [toastVisible, setToastVisible] = useState(false)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -77,41 +82,18 @@ export default function FavoritesPage() {
       setTodayStr(todayFormatted)
       setTomorrowStr(tomorrowFormatted)
 
-      const { data: favData } = await supabase
-        .from('favorites')
-        .select('id, menu_items ( id, name )')
-        .eq('user_id', user.id)
-
-      const favs = (favData as unknown as Favorite[]) ?? []
+      const rows = await fetchFavoriteRows(user.id)
 
       const { data: upcomingMeals } = await supabase
         .from('meals')
-        .select('meal_date, meal_type, meal_items ( menu_item_id )')
+        .select('meal_date, meal_type, meal_items ( menu_item_id, menu_items ( name, group_id ) )')
         .eq('dorm', '도봉학사')
         .gte('meal_date', todayFormatted)
         .order('meal_date', { ascending: true })
 
-      type UpcomingMeal = { meal_date: string; meal_type: string; meal_items: { menu_item_id: string }[] }
-      const sortedMeals = ((upcomingMeals as unknown as UpcomingMeal[]) ?? []).sort((a, b) => {
-        if (a.meal_date !== b.meal_date) return a.meal_date < b.meal_date ? -1 : 1
-        return MEAL_TYPE_ORDER.indexOf(a.meal_type) - MEAL_TYPE_ORDER.indexOf(b.meal_type)
-      })
-
-      const nextMap: Record<string, NextOccurrence> = {}
-      let rank = 0
-      for (const meal of sortedMeals) {
-        for (const item of meal.meal_items ?? []) {
-          if (!nextMap[item.menu_item_id]) {
-            nextMap[item.menu_item_id] = { meal_date: meal.meal_date, meal_type: meal.meal_type, rank }
-          }
-        }
-        rank++
-      }
-      setNextByMenuItem(nextMap)
-
-      const sortedFavs = sortByNextOccurrence(favs, nextMap)
-
-      setFavorites(sortedFavs)
+      const nextMap = computeNextByGroup((upcomingMeals as unknown as Parameters<typeof computeNextByGroup>[0]) ?? [])
+      setNextByGroup(nextMap)
+      setFavorites(sortByNextOccurrence(rows, nextMap))
       setLoading(false)
     }
     load()
@@ -129,28 +111,26 @@ export default function FavoritesPage() {
     setTimeout(() => setRemovedToast(null), 200)
   }
 
-  const removeFavorite = (favorite: Favorite) => {
-    setFavorites((prev) => prev.filter((f) => f.id !== favorite.id))
+  const removeFavorite = (row: FavoriteRow, menuItemIds: string[]) => {
+    setFavorites((prev) => prev.filter((r) => r.key !== row.key))
 
     if (toastTimer.current) clearTimeout(toastTimer.current)
-    setRemovedToast(favorite)
+    setRemovedToast({ row, menuItemIds })
     requestAnimationFrame(() => setToastVisible(true))
     toastTimer.current = setTimeout(dismissToast, UNDO_DURATION_MS)
   }
 
   const undoRemove = async () => {
-    if (!removedToast?.menu_items || !userId) return
+    if (!removedToast || !userId) return
     if (toastTimer.current) clearTimeout(toastTimer.current)
 
-    const menuItemId = removedToast.menu_items.id
-    const { data } = await supabase
-      .from('favorites')
-      .insert({ user_id: userId, menu_item_id: menuItemId })
-      .select('id, menu_items ( id, name )')
-      .maybeSingle()
+    // 묶음 전체를 되살린다. 하나가 실패해도 나머지는 계속
+    for (const menuItemId of removedToast.menuItemIds) {
+      await supabase.from('favorites').insert({ user_id: userId, menu_item_id: menuItemId })
+    }
 
-    const restored = (data as unknown as Favorite) ?? removedToast
-    setFavorites((prev) => sortByNextOccurrence([...prev, restored], nextByMenuItem))
+    const rows = await fetchFavoriteRows(userId)
+    setFavorites(sortByNextOccurrence(rows, nextByGroup))
     setToastVisible(false)
     setTimeout(() => setRemovedToast(null), 200)
   }
@@ -173,14 +153,16 @@ export default function FavoritesPage() {
         />
       ) : (
         <ul className="flex flex-col">
-          {favorites.map((f) => {
-            if (!f.menu_items) return null
-            const { main, detail } = splitMenuName(f.menu_items.name)
-            const next = nextByMenuItem[f.menu_items.id]
+          {favorites.map((row) => {
+            const menuItem = row.primary.menu_items
+            if (!menuItem) return null
+            const { main, detail } = splitMenuName(menuItem.name)
+            const next = nextByGroup[row.key]
+            const nextMain = next ? splitMenuName(next.name).main : ''
 
             return (
               <li
-                key={f.id}
+                key={row.key}
                 className="py-3.5 border-b border-border flex items-center justify-between gap-3"
               >
                 <div>
@@ -191,16 +173,18 @@ export default function FavoritesPage() {
                   {next ? (
                     <div className="text-xs font-semibold text-foreground mt-1.5 flex items-center gap-1.5">
                       <span className="w-[5px] h-[5px] rounded-full bg-foreground" />
-                      다음 등장: {describeOccurrence(next.meal_date, next.meal_type, todayStr, tomorrowStr)}
+                      다음 등장: {nextMain !== main && `${nextMain} · `}
+                      {describeOccurrence(next.meal_date, next.meal_type, todayStr, tomorrowStr)}
                     </div>
                   ) : (
                     <div className="text-xs text-faint mt-1.5">이번 주 예정 없음</div>
                   )}
                 </div>
                 <FavoriteButton
-                  menuItemId={f.menu_items.id}
-                  onToggle={(favorited) => {
-                    if (!favorited) removeFavorite(f)
+                  menuItemId={menuItem.id}
+                  groupId={menuItem.group_id}
+                  onToggle={(favorited, removedMenuItemIds) => {
+                    if (!favorited) removeFavorite(row, removedMenuItemIds)
                   }}
                 />
               </li>
@@ -209,7 +193,7 @@ export default function FavoritesPage() {
         </ul>
       )}
 
-      {removedToast?.menu_items && (
+      {removedToast?.row.primary.menu_items && (
         <div
           className={`fixed inset-x-0 bottom-24 z-50 flex justify-center px-6 transition-all duration-200 ${
             toastVisible ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
@@ -217,7 +201,7 @@ export default function FavoritesPage() {
         >
           <div className="relative overflow-hidden flex items-center gap-3 rounded-full bg-foreground text-background pl-4 pr-2 py-2 shadow-lg max-w-full">
             <span className="text-sm whitespace-nowrap overflow-hidden text-ellipsis">
-              {splitMenuName(removedToast.menu_items.name).main} 즐겨찾기에서 제거됨
+              {splitMenuName(removedToast.row.primary.menu_items.name).main} 즐겨찾기에서 제거됨
             </span>
             <button
               onClick={undoRemove}
@@ -226,7 +210,7 @@ export default function FavoritesPage() {
               실행취소
             </button>
             <div
-              key={removedToast.id}
+              key={removedToast.row.key}
               className="absolute bottom-0 left-0 h-0.5 w-full origin-left bg-background/60"
               style={{ animation: `toast-progress ${UNDO_DURATION_MS}ms linear forwards` }}
             />

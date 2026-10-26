@@ -86,3 +86,53 @@ export function findAutoGroupedNotInFile(file: GroupFile, items: GroupedItem[], 
     .filter((item) => item.group_id && !fileNames.has(normalizeMenuName(item.name)))
     .map((item) => ({ name: item.name, groupName: groupNameById.get(item.group_id!) ?? '' }))
 }
+
+// 즐겨찾기·다음 등장을 묶는 단위: 묶음이 있으면 묶음, 없으면 메뉴 하나
+export function groupKeyOf(item: { id: string; group_id: string | null }): string {
+  return item.group_id ?? `item:${item.id}`
+}
+
+export type NextOccurrence = { meal_date: string; meal_type: string; rank: number; name: string }
+
+type UpcomingMeal = {
+  meal_date: string
+  meal_type: string
+  meal_items: { menu_item_id: string; menu_items: { name: string; group_id: string | null } | null }[]
+}
+
+const MEAL_TYPE_ORDER = ['breakfast', 'lunch', 'dinner']
+
+// 다가오는 식단을 날짜·끼니 순으로 훑어 묶음 키별 첫 등장(그때의 실제 이름 포함)을 찾는다
+export function computeNextByGroup(meals: UpcomingMeal[]): Record<string, NextOccurrence> {
+  const sorted = [...meals].sort((a, b) => {
+    if (a.meal_date !== b.meal_date) return a.meal_date < b.meal_date ? -1 : 1
+    return MEAL_TYPE_ORDER.indexOf(a.meal_type) - MEAL_TYPE_ORDER.indexOf(b.meal_type)
+  })
+
+  const next: Record<string, NextOccurrence> = {}
+  sorted.forEach((meal, rank) => {
+    for (const item of meal.meal_items ?? []) {
+      if (!item.menu_items) continue
+      const key = groupKeyOf({ id: item.menu_item_id, group_id: item.menu_items.group_id })
+      if (!next[key]) {
+        next[key] = { meal_date: meal.meal_date, meal_type: meal.meal_type, rank, name: item.menu_items.name }
+      }
+    }
+  })
+  return next
+}
+
+// 같은 묶음의 즐겨찾기를 한 줄로 모은다 (먼저 나온 즐겨찾기가 대표)
+export function groupFavorites<F extends { id: string; menu_items: { id: string; name: string; group_id: string | null } | null }>(
+  favs: F[]
+): { key: string; primary: F; all: F[] }[] {
+  const rows = new Map<string, { key: string; primary: F; all: F[] }>()
+  for (const fav of favs) {
+    if (!fav.menu_items) continue
+    const key = groupKeyOf(fav.menu_items)
+    const row = rows.get(key)
+    if (row) row.all.push(fav)
+    else rows.set(key, { key, primary: fav, all: [fav] })
+  }
+  return [...rows.values()]
+}

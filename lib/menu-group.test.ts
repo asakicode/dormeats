@@ -1,6 +1,14 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { findExactMenuItem, menuKey, findGroupIdByKey, planGroupSync, findAutoGroupedNotInFile } from './menu-group'
+import {
+  findExactMenuItem,
+  menuKey,
+  findGroupIdByKey,
+  planGroupSync,
+  findAutoGroupedNotInFile,
+  computeNextByGroup,
+  groupFavorites,
+} from './menu-group'
 
 test('findExactMenuItem: 공백만 무시하고 정확히 같은 이름만', () => {
   const items = [{ id: '1', name: '바나나우유' }, { id: '2', name: '미역 냉국' }]
@@ -66,4 +74,25 @@ test('findAutoGroupedNotInFile', () => {
     [{ id: '1', name: '씨러얼&우유', group_id: 'g' }, { id: '2', name: '씨리얼&우유', group_id: 'g' }],
     [{ id: 'g', name: '씨리얼' }])
   assert.deepEqual(r, [{ name: '씨러얼&우유', groupName: '씨리얼' }])
+})
+
+test('computeNextByGroup: 같은 묶음의 다른 이름이 다음 등장', () => {
+  const next = computeNextByGroup([
+    { meal_date: '2026-10-30', meal_type: 'lunch', meal_items: [{ menu_item_id: 'b', menu_items: { name: '미역오이냉국', group_id: 'g' } }] },
+    { meal_date: '2026-10-28', meal_type: 'dinner', meal_items: [{ menu_item_id: 'c', menu_items: { name: '쌀밥', group_id: null } }] },
+  ])
+  assert.equal(next['g'].name, '미역오이냉국')
+  assert.equal(next['g'].meal_date, '2026-10-30')
+  assert.equal(next['item:c'].rank, 0)
+})
+
+test('computeNextByGroup: 같은 날은 아침→점심→저녁', () => {
+  const m = (t: string) => ({ meal_date: '2026-10-28', meal_type: t, meal_items: [{ menu_item_id: 'x', menu_items: { name: '김', group_id: null } }] })
+  assert.equal(computeNextByGroup([m('dinner'), m('breakfast')])['item:x'].meal_type, 'breakfast')
+})
+
+test('groupFavorites: 같은 묶음은 한 줄, 혼자인 메뉴는 각자', () => {
+  const f = (id: string, mid: string, g: string | null) => ({ id, menu_items: { id: mid, name: mid, group_id: g } })
+  const r = groupFavorites([f('1', 'a', 'g'), f('2', 'b', null), f('3', 'c', 'g')])
+  assert.deepEqual(r.map((x) => [x.key, x.primary.id, x.all.map((y) => y.id)]), [['g', '1', ['1', '3']], ['item:b', '2', ['2']]])
 })

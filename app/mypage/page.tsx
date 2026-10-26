@@ -6,6 +6,7 @@ import { Heart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { cleanMenuName } from '@/lib/menu'
+import { groupFavorites } from '@/lib/menu-group'
 
 type Post = {
   id: string
@@ -26,7 +27,7 @@ type Comment = {
 
 type Favorite = {
   id: string
-  menu_items: { id: string; name: string } | null
+  menu_items: { id: string; name: string; group_id: string | null } | null
 }
 
 const boardLink = (boardType: string, id: string) =>
@@ -91,9 +92,10 @@ export default function MyPage() {
 
       const { data: myFavorites } = await supabase
         .from('favorites')
-        .select('id, menu_items ( id, name )')
+        .select('id, menu_items ( id, name, group_id )')
         .eq('user_id', user.id)
-      setFavorites((myFavorites as unknown as Favorite[]) ?? [])
+      // 같은 묶음은 대표 메뉴 하나만 칩으로
+      setFavorites(groupFavorites((myFavorites as unknown as Favorite[]) ?? []).map((row) => row.primary))
 
       const { count } = await supabase
         .from('reviews')
