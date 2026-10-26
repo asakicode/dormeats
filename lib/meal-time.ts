@@ -49,6 +49,13 @@ export function getEffectiveDay(now: Date): { todayStr: string; effectiveDate: s
   return { todayStr, effectiveDate: allEnded ? addOneDay(todayStr) : todayStr }
 }
 
+// 오늘 식단 중 이미 끝난 끼니를 뺀다 (진행 중인 끼니는 남김)
+export function removeEndedMeals<T extends { meal_date: string; meal_type: string }>(meals: T[], now: Date): T[] {
+  const todayStr = getSeoulDateStr(now)
+  const phases = getMealPhases(getSeoulMinutes(now), 0)
+  return meals.filter((m) => m.meal_date !== todayStr || phases[m.meal_type as MealType]?.kind !== 'ended')
+}
+
 // dayOffset: 보고 있는 날이 실제 오늘이면 0, 내일이면 1
 export function getMealPhases(nowMinutes: number, dayOffset: 0 | 1): Record<MealType, MealPhase> {
   const shift = dayOffset * 1440

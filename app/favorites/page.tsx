@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { getKoreaToday, formatDate } from '@/lib/date'
 import { splitMenuName } from '@/lib/menu'
 import { computeNextByGroup, groupFavorites, type NextOccurrence } from '@/lib/menu-group'
+import { removeEndedMeals } from '@/lib/meal-time'
 import { Heart } from 'lucide-react'
 import FavoriteButton from '../components/FavoriteButton'
 import EmptyState from '../components/EmptyState'
@@ -91,7 +92,9 @@ export default function FavoritesPage() {
         .gte('meal_date', todayFormatted)
         .order('meal_date', { ascending: true })
 
-      const nextMap = computeNextByGroup((upcomingMeals as unknown as Parameters<typeof computeNextByGroup>[0]) ?? [])
+      const nextMap = computeNextByGroup(
+        removeEndedMeals((upcomingMeals as unknown as Parameters<typeof computeNextByGroup>[0]) ?? [], new Date())
+      )
       setNextByGroup(nextMap)
       setFavorites(sortByNextOccurrence(rows, nextMap))
       setLoading(false)

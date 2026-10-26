@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { getMealPhases, formatDuration, getSeoulMinutes, getEffectiveDay } from './meal-time'
+import { getMealPhases, formatDuration, getSeoulMinutes, getEffectiveDay, removeEndedMeals } from './meal-time'
 
 test('점심 중 12:20', () => {
   const p = getMealPhases(740, 0)
@@ -58,4 +58,17 @@ test('getEffectiveDay: 월말 21:00 KST → 다음 달 1일', () => {
     todayStr: '2026-10-31',
     effectiveDate: '2026-11-01',
   })
+})
+
+const meals = [
+  { meal_date: '2026-10-26', meal_type: 'breakfast' },
+  { meal_date: '2026-10-26', meal_type: 'lunch' },
+  { meal_date: '2026-10-26', meal_type: 'dinner' },
+  { meal_date: '2026-10-27', meal_type: 'breakfast' },
+]
+test('removeEndedMeals: 14:00 KST → 오늘 아침·점심 제외', () => {
+  assert.deepEqual(removeEndedMeals(meals, new Date('2026-10-26T05:00:00Z')), meals.slice(2))
+})
+test('removeEndedMeals: 점심 중 12:30 KST → 점심은 남김', () => {
+  assert.deepEqual(removeEndedMeals(meals, new Date('2026-10-26T03:30:00Z')), meals.slice(1))
 })
