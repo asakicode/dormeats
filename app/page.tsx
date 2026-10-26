@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { formatDate, getKoreaToday, getCurrentMealType, getNextMealType, getWeekDates } from '@/lib/date'
-import { MEAL_ORDER, getMealPhases, getSeoulMinutes } from '@/lib/meal-time'
+import { getWeekDates } from '@/lib/date'
+import { MEAL_ORDER, getEffectiveDay, getMealPhases, getSeoulMinutes } from '@/lib/meal-time'
 import { useNow } from '@/lib/useNow'
 import DateStrip from './components/home/DateStrip'
 import MealSection from './components/home/MealSection'
@@ -15,32 +15,22 @@ export type TopPost = { id: string; title: string; content: string; like_count: 
 
 export default function Home() {
   const now = useNow()
-  const [todayStr, setTodayStr] = useState('')
-  const [selectedDate, setSelectedDate] = useState('')
-  const [effectiveDate, setEffectiveDate] = useState('')
+  // 날짜 기준은 매 분 다시 계산한다. 탭을 켜 둔 채 자정이나 저녁 8시를 넘겨도 맞게 바뀐다.
+  const { todayStr, effectiveDate } = getEffectiveDay(now)
+  const weekDates = getWeekDates(effectiveDate)
+  const weekStart = weekDates[0]
+
+  // 사용자가 고르지 않았으면 기준일과 현재 끼니를 따라간다
+  const [pickedDate, setPickedDate] = useState<string | null>(null)
+  const [pickedMeal, setPickedMeal] = useState<string | null>(null)
   const [mealMap, setMealMap] = useState<Record<string, Record<string, Meal>>>({})
-  const [expandedMeal, setExpandedMeal] = useState<string>('')
+  const [loadedWeek, setLoadedWeek] = useState<string | null>(null)
   const [topPost, setTopPost] = useState<TopPost | null>(null)
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let cancelled = false
     const load = async () => {
-      const today = getKoreaToday()
-      const todayFormatted = formatDate(today)
-
-      const currentMeal = getCurrentMealType()
-      const nextMeal = currentMeal ? null : getNextMealType()
-      const tomorrow = new Date(today)
-      tomorrow.setDate(today.getDate() + 1)
-      const tomorrowFormatted = formatDate(tomorrow)
-      const todayHasEnded = !currentMeal && nextMeal?.when === 'tomorrow'
-      const effective = todayHasEnded ? tomorrowFormatted : todayFormatted
-      const dates = getWeekDates(effective)
-
-      setTodayStr(todayFormatted)
-      setEffectiveDate(effective)
-      setSelectedDate(effective)
-
+      const dates = getWeekDates(weekStart)
       const { data: meals } = await supabase
         .from('meals')
         .select('id, meal_type, meal_date, meal_items ( display_order, menu_items ( id, name ) )')
@@ -48,6 +38,7 @@ export default function Home() {
         .lte('meal_date', dates[6])
         .eq('dorm', '도봉학사')
         .order('display_order', { referencedTable: 'meal_items' })
+      if (cancelled) return
 
       const map: Record<string, Record<string, Meal>> = {}
       for (const meal of (meals as unknown as Meal[]) ?? []) {
@@ -55,9 +46,16 @@ export default function Home() {
         map[meal.meal_date][meal.meal_type] = meal
       }
       setMealMap(map)
+      setLoadedWeek(weekStart)
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [weekStart])
 
-      setExpandedMeal(currentMeal ?? nextMeal?.type ?? '')
-
+  useEffect(() => {
+    const load = async () => {
       const { data: topPosts } = await supabase
         .from('posts_view')
         .select('id, title, content, like_count, is_anonymous, created_at, author_nickname')
@@ -65,24 +63,22 @@ export default function Home() {
         .gt('like_count', 0)
         .order('like_count', { ascending: false })
         .limit(1)
-
       setTopPost((topPosts?.[0] as unknown as TopPost) ?? null)
-      setLoading(false)
     }
     load()
   }, [])
 
-
-  if (loading) {
+  if (loadedWeek === null) {
     return <div className="max-w-xl mx-auto px-6 py-16 text-muted-foreground">불러오는 중...</div>
   }
 
-  const weekDates = getWeekDates(effectiveDate)
+  const selectedDate = pickedDate && weekDates.includes(pickedDate) ? pickedDate : effectiveDate
   const dayMeals = mealMap[selectedDate] ?? {}
-  const phases =
-    selectedDate === effectiveDate
-      ? getMealPhases(getSeoulMinutes(now), effectiveDate === todayStr ? 0 : 1)
-      : null
+  const effectivePhases = getMealPhases(getSeoulMinutes(now), effectiveDate === todayStr ? 0 : 1)
+  const phases = selectedDate === effectiveDate ? effectivePhases : null
+  const defaultMeal =
+    MEAL_ORDER.find((t) => effectivePhases[t].kind === 'now' || effectivePhases[t].kind === 'upcoming') ?? ''
+  const expandedMeal = pickedMeal ?? defaultMeal
   const viewingRealToday = selectedDate === todayStr
 
   return (
@@ -92,7 +88,7 @@ export default function Home() {
         selectedDate={selectedDate}
         todayStr={todayStr}
         effectiveDate={effectiveDate}
-        onSelect={setSelectedDate}
+        onSelect={(d) => setPickedDate(d === effectiveDate ? null : d)}
       />
 
       <div>
@@ -105,7 +101,7 @@ export default function Home() {
               mealType={mealType}
               meal={meal}
               expanded={mealType === expandedMeal}
-              onExpand={() => setExpandedMeal(mealType)}
+              onExpand={() => setPickedMeal(mealType)}
               phase={phase}
               dimmed={viewingRealToday && phase?.kind === 'ended'}
               showReviews={viewingRealToday && !!meal}

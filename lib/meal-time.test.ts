@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { getMealPhases, formatDuration, getSeoulMinutes } from './meal-time'
+import { getMealPhases, formatDuration, getSeoulMinutes, getEffectiveDay } from './meal-time'
 
 test('점심 중 12:20', () => {
   const p = getMealPhases(740, 0)
@@ -33,3 +33,29 @@ test('formatDuration', () => {
 })
 test('getSeoulMinutes: UTC 03:20 = 서울 12:20', () =>
   assert.equal(getSeoulMinutes(new Date('2026-10-26T03:20:00Z')), 740))
+
+// 시각은 UTC로 적는다. KST = UTC+9
+test('getEffectiveDay: 점심 12:00 KST → 오늘 그대로', () => {
+  assert.deepEqual(getEffectiveDay(new Date('2026-10-26T03:00:00Z')), {
+    todayStr: '2026-10-26',
+    effectiveDate: '2026-10-26',
+  })
+})
+test('getEffectiveDay: 저녁 끝난 20:30 KST → 내일', () => {
+  assert.deepEqual(getEffectiveDay(new Date('2026-10-26T11:30:00Z')), {
+    todayStr: '2026-10-26',
+    effectiveDate: '2026-10-27',
+  })
+})
+test('getEffectiveDay: 자정 넘은 00:20 KST → 새 날짜가 오늘이자 기준일', () => {
+  assert.deepEqual(getEffectiveDay(new Date('2026-10-26T15:20:00Z')), {
+    todayStr: '2026-10-27',
+    effectiveDate: '2026-10-27',
+  })
+})
+test('getEffectiveDay: 월말 21:00 KST → 다음 달 1일', () => {
+  assert.deepEqual(getEffectiveDay(new Date('2026-10-31T12:00:00Z')), {
+    todayStr: '2026-10-31',
+    effectiveDate: '2026-11-01',
+  })
+})

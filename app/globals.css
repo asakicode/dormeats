@@ -2,6 +2,7 @@
 
 :root {
   color-scheme: light dark;
+  --font-body: "Pretendard Variable", Pretendard;
   --background: #ffffff;
   --surface: #ffffff;
   --surface-hover: #f5f6f7;

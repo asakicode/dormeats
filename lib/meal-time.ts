@@ -2,7 +2,7 @@ export type MealType = 'breakfast' | 'lunch' | 'dinner'
 
 export const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'dinner']
 
-// 자정부터의 분. lib/date.ts의 식사 시각과 같아야 한다.
+// 자정부터의 분
 export const MEAL_SCHEDULE: Record<MealType, { start: number; end: number }> = {
   breakfast: { start: 7 * 60, end: 8 * 60 + 30 },
   lunch: { start: 12 * 60, end: 13 * 60 },
@@ -25,6 +25,28 @@ export function getSeoulMinutes(now: Date): number {
   const hour = Number(parts.find((p) => p.type === 'hour')?.value ?? '0') % 24
   const minute = Number(parts.find((p) => p.type === 'minute')?.value ?? '0')
   return hour * 60 + minute
+}
+
+function getSeoulDateStr(now: Date): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now)
+}
+
+function addOneDay(dateStr: string): string {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  return new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10)
+}
+
+// 오늘 끼니가 모두 끝났으면(저녁 이후) 내일을 기준일로 본다
+export function getEffectiveDay(now: Date): { todayStr: string; effectiveDate: string } {
+  const todayStr = getSeoulDateStr(now)
+  const phases = getMealPhases(getSeoulMinutes(now), 0)
+  const allEnded = MEAL_ORDER.every((t) => phases[t].kind === 'ended')
+  return { todayStr, effectiveDate: allEnded ? addOneDay(todayStr) : todayStr }
 }
 
 // dayOffset: 보고 있는 날이 실제 오늘이면 0, 내일이면 1
