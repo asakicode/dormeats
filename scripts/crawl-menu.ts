@@ -3,7 +3,9 @@ config({ path: '.env.local' })
 
 import * as cheerio from 'cheerio'
 import { createClient } from '@supabase/supabase-js'
-import { getKoreaToday, getMondayOfWeek, formatDate } from '../lib/date'
+import { getKoreaToday, getMondayOfWeek, formatDate, getWeekMondaysFrom } from '../lib/date'
+import { appendFileSync } from 'node:fs'
+import { findExactMenuItem, findGroupIdByKey } from '../lib/menu-group'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -13,11 +15,6 @@ const MEAL_TYPE_MAP: Record<string, string> = {
   아침: 'breakfast',
   점심: 'lunch',
   저녁: 'dinner',
-}
-
-// 메뉴명 정규화: 공백 제거, 특수문자 정리
-function normalize(name: string): string {
-  return name.replace(/\s+/g, '').trim()
 }
 
 // '&'로 시작하는 줄은 앞 메뉴의 연속(콤보 구성)이므로 앞 항목에 붙이기
@@ -74,37 +71,13 @@ function mergeParenthesesItems(items: string[]): string[] {
   return merged
 }
 
-// 기존 menu_items 중에서 같은 메뉴로 볼 수 있는 게 있는지 규칙 기반으로 찾기
-function findMatchingMenuItem(
-  newName: string,
-  existingItems: { id: string; name: string }[]
-): { id: string; name: string } | null {
-  const normalizedNew = normalize(newName)
-
-  const exactMatch = existingItems.find(
-    (item) => normalize(item.name) === normalizedNew
-  )
-  if (exactMatch) return exactMatch
-
-  if (normalizedNew.length >= 2) {
-    const partialMatch = existingItems.find((item) => {
-      const normalizedExisting = normalize(item.name)
-      return (
-        normalizedExisting.length >= 2 &&
-        (normalizedNew.includes(normalizedExisting) ||
-          normalizedExisting.includes(normalizedNew))
-      )
-    })
-    if (partialMatch) return partialMatch
-  }
-
-  return null
-}
+// 이번 실행에서 새로 등록된 메뉴 이름 (Actions 요약용)
+const newMenuNames: string[] = []
 
 async function crawlWeek(monday: Date) {
   const { data: existingMenuItems } = await supabase
     .from('menu_items')
-    .select('id, name')
+    .select('id, name, group_id')
 
   let menuItemCache = existingMenuItems ?? []
 
@@ -191,12 +164,13 @@ async function crawlWeek(monday: Date) {
       for (let order = 0; order < items.length; order++) {
         const itemName = items[order]
 
-        let menuItem = findMatchingMenuItem(itemName, menuItemCache)
+        let menuItem = findExactMenuItem(itemName, menuItemCache)
 
         if (!menuItem) {
+          const groupId = findGroupIdByKey(itemName, menuItemCache)
           const { data: newMenuItem, error: menuError } = await supabase
             .from('menu_items')
-            .insert({ name: itemName })
+            .insert({ name: itemName, group_id: groupId })
             .select()
             .single()
 
@@ -207,28 +181,8 @@ async function crawlWeek(monday: Date) {
 
           menuItem = newMenuItem
           menuItemCache = [...menuItemCache, newMenuItem]
-          console.log(`  신규 메뉴 등록: ${itemName}`)
-        } else if (normalize(menuItem.name) !== normalize(itemName)) {
-          const normalizedExisting = normalize(menuItem.name)
-          const normalizedNew = normalize(itemName)
-
-          if (normalizedNew.length > normalizedExisting.length && normalizedNew.includes(normalizedExisting)) {
-            // 기존에 저장된 이름이 이번에 크롤링한 이름의 일부일 뿐이면(과거 파싱 버그 등) 더 완전한 이름으로 보강
-            const { error: updateError } = await supabase
-              .from('menu_items')
-              .update({ name: itemName })
-              .eq('id', menuItem.id)
-
-            if (updateError) {
-              console.error(`menu_items 이름 갱신 실패 (${itemName}):`, updateError.message)
-            } else {
-              console.log(`  메뉴명 보강: "${menuItem.name}" → "${itemName}"`)
-              menuItem = { ...menuItem, name: itemName }
-              menuItemCache = menuItemCache.map((m) => (m.id === menuItem!.id ? menuItem! : m))
-            }
-          } else {
-            console.log(`  기존 메뉴로 매칭: "${itemName}" → "${menuItem.name}"`)
-          }
+          newMenuNames.push(itemName)
+          console.log(groupId ? `  신규 메뉴 자동 묶음: ${itemName}` : `  신규 메뉴 등록: ${itemName}`)
         }
 
         if (!menuItem) continue
@@ -253,6 +207,49 @@ async function crawlWeek(monday: Date) {
   console.log(`\n완료! 총 ${totalInserted}개 메뉴 항목이 저장됐습니다.`)
 }
 
-const today = getKoreaToday()
-const monday = getMondayOfWeek(today)
-crawlWeek(monday)
+// 묶이지 않은 메뉴 개수를 출력하고, GitHub Actions에서는 실행 결과 화면(job summary)에도 남긴다
+async function reportUngrouped() {
+  const { count, error } = await supabase
+    .from('menu_items')
+    .select('id', { count: 'exact', head: true })
+    .is('group_id', null)
+
+  if (error) {
+    console.error('묶이지 않은 메뉴 개수 조회 실패:', error.message)
+    return
+  }
+
+  console.log(`묶이지 않은 메뉴 ${count}개, 이번 실행 새 이름 ${newMenuNames.length}개`)
+
+  const summaryPath = process.env.GITHUB_STEP_SUMMARY
+  if (!summaryPath) return
+
+  const lines = [
+    `### 묶이지 않은 메뉴 ${count}개`,
+    '',
+    newMenuNames.length ? `이번 실행에서 새로 생긴 이름: ${newMenuNames.join(', ')}` : '이번 실행에서 새로 생긴 이름 없음',
+    '',
+    'Claude Code에서 "새 메뉴 묶어줘"라고 하면 묶음표에 추가합니다.',
+    '',
+  ]
+  appendFileSync(summaryPath, lines.join('\n'))
+}
+
+// --from YYYY-MM-DD: 그 날짜가 속한 주부터 이번 주까지 다시 크롤링 (없으면 이번 주만)
+async function main() {
+  const today = getKoreaToday()
+  const fromIdx = process.argv.indexOf('--from')
+  const from = fromIdx >= 0 ? process.argv[fromIdx + 1] : null
+
+  if (!from) {
+    await crawlWeek(getMondayOfWeek(today))
+  } else {
+    for (const mondayStr of getWeekMondaysFrom(from, formatDate(today))) {
+      await crawlWeek(new Date(`${mondayStr}T00:00:00`))
+    }
+  }
+
+  await reportUngrouped()
+}
+
+main()

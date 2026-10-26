@@ -1,6 +1,11 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { getWeekDates, getRelativeDayLabel, formatKoreanDate } from './date'
+import { getWeekDates, getRelativeDayLabel, formatKoreanDate, getWeekMondaysFrom } from './date'
+
+test('getWeekMondaysFrom', () => {
+  assert.deepEqual(getWeekMondaysFrom('2026-10-14', '2026-10-26'), ['2026-10-12', '2026-10-19', '2026-10-26'])
+  assert.deepEqual(getWeekMondaysFrom('2026-10-26', '2026-11-01'), ['2026-10-26'])
+})
 
 test('getWeekDates 월요일/일요일', () => {
   assert.deepEqual(getWeekDates('2026-10-26'), ['2026-10-26','2026-10-27','2026-10-28','2026-10-29','2026-10-30','2026-10-31','2026-11-01'])

@@ -65,6 +65,18 @@ export function getWeekDates(dateStr: string): string[] {
   return dates
 }
 
+// fromStr이 속한 주부터 todayStr이 속한 주까지 각 주의 월요일
+export function getWeekMondaysFrom(fromStr: string, todayStr: string): string[] {
+  const last = formatDate(getMondayOfWeek(parseDateStr(todayStr)))
+  const monday = getMondayOfWeek(parseDateStr(fromStr))
+  const mondays: string[] = []
+  while (formatDate(monday) <= last) {
+    mondays.push(formatDate(monday))
+    monday.setDate(monday.getDate() + 7)
+  }
+  return mondays
+}
+
 export function getRelativeDayLabel(dateStr: string, todayStr: string): '오늘' | '내일' | '모레' | '어제' | '' {
   const diff = Math.round((parseDateStr(dateStr).getTime() - parseDateStr(todayStr).getTime()) / 86400000)
   if (diff === 0) return '오늘'
