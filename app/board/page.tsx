@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Heart, MessageCircleHeart } from 'lucide-react'
+import EmptyState from '../components/EmptyState'
 import { supabase } from '@/lib/supabase'
 import { formatRelativeTime } from '@/lib/date'
 
@@ -77,7 +79,7 @@ export default function BoardPage() {
   if (error) {
     return (
       <div className="max-w-xl mx-auto px-6 py-16">
-        <h1 className="font-serif text-xl font-bold text-danger">오류 발생 😢</h1>
+        <h1 className="text-xl font-bold text-danger">오류가 발생했어요</h1>
         <p className="mt-2 text-sm text-muted-foreground">{error}</p>
       </div>
     )
@@ -87,7 +89,7 @@ export default function BoardPage() {
     <div className="max-w-2xl mx-auto px-6 py-10">
       <div className="flex justify-between items-center mb-7">
         <div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight">희망메뉴 게시판</h1>
+          <h1 className="text-3xl font-bold tracking-tight">희망메뉴 게시판</h1>
           <p className="mt-1.5 text-sm text-muted-foreground">먹고 싶은 메뉴를 요청해보세요</p>
         </div>
         <Link
@@ -99,50 +101,48 @@ export default function BoardPage() {
       </div>
 
       {topPosts.length > 0 && (
-        <div className="mb-8 rounded-2xl border border-accent-soft-border bg-accent-soft p-5">
-          <h2 className="font-serif text-lg font-bold mb-3">실시간 TOP {topPosts.length}</h2>
-          <ul className="space-y-2.5">
+        <section className="mb-8">
+          <h2 className="text-xs font-semibold text-faint mb-1">실시간 TOP {topPosts.length}</h2>
+          <ul>
             {topPosts.map((post, idx) => (
               <li key={post.id}>
-                <Link href={`/board/${post.id}`} className="flex items-center gap-3 group">
-                  <span className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
-                    {idx + 1}
-                  </span>
-                  <span className="flex-1 text-sm font-medium text-foreground group-hover:text-primary-hover transition-colors truncate">
-                    {post.title}
-                  </span>
-                  <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-                    ❤️ {post.like_count}
+                <Link href={`/board/${post.id}`} className="flex items-center gap-3 py-3 border-b border-border">
+                  <span className="w-5 shrink-0 text-base font-extrabold tabular-nums">{idx + 1}</span>
+                  <span className="flex-1 text-[15px] font-medium text-foreground truncate">{post.title}</span>
+                  <span className="shrink-0 inline-flex items-center gap-1 text-xs font-bold tabular-nums">
+                    <Heart size={13} className="fill-like text-like" />
+                    {post.like_count}
                   </span>
                 </Link>
               </li>
             ))}
           </ul>
-        </div>
+        </section>
       )}
 
       {posts.length === 0 && (
-        <p className="rounded-2xl border border-dashed border-border-strong bg-surface px-5 py-8 text-center text-muted-foreground">
-          아직 등록된 글이 없습니다.
-        </p>
+        <EmptyState
+          icon={MessageCircleHeart}
+          title="아직 희망메뉴가 없어요"
+          description="먹고 싶은 메뉴를 처음으로 올려 보세요"
+          action={{ href: '/board/new', label: '글쓰기' }}
+        />
       )}
 
-      <ul className="grid gap-3 sm:grid-cols-2">
+      <ul>
         {posts.map((post) => (
           <li key={post.id}>
-            <Link
-              href={`/board/${post.id}`}
-              className="block rounded-2xl border border-border bg-surface p-4 transition-all hover:border-border-strong hover:shadow-[0_4px_16px_rgba(118,85,42,0.06)]"
-            >
+            <Link href={`/board/${post.id}`} className="block py-3.5 border-b border-border">
               <div className="flex justify-between items-start gap-3">
-                <h2 className="font-semibold text-foreground">{post.title}</h2>
-                <span className="shrink-0 text-sm text-muted-foreground tabular-nums">
-                  ❤️ {post.like_count}
+                <h2 className="text-[15px] font-medium text-foreground">{post.title}</h2>
+                <span className="shrink-0 inline-flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
+                  <Heart size={13} className={post.like_count > 0 ? 'fill-like text-like' : 'text-faint'} />
+                  {post.like_count}
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground mt-1.5">
+              <p className="mt-1 text-xs text-faint">
                 {post.is_anonymous ? '익명' : post.author_nickname ?? '알 수 없음'}
-                <span className="mx-1.5 text-border-strong">·</span>
+                <span className="mx-1.5">·</span>
                 {formatRelativeTime(post.created_at)}
               </p>
             </Link>

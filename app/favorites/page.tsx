@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getKoreaToday, formatDate } from '@/lib/date'
 import { splitMenuName } from '@/lib/menu'
+import { Heart } from 'lucide-react'
 import FavoriteButton from '../components/FavoriteButton'
+import EmptyState from '../components/EmptyState'
 
 const MEAL_TYPE_LABEL: Record<string, string> = {
   breakfast: '아침',
@@ -159,15 +161,18 @@ export default function FavoritesPage() {
 
   return (
     <div className="max-w-xl mx-auto px-6 py-10">
-      <h1 className="font-serif text-3xl font-bold tracking-tight mb-1">즐겨찾기 메뉴</h1>
+      <h1 className="text-3xl font-bold tracking-tight mb-1">즐겨찾기 메뉴</h1>
       <p className="text-sm text-muted-foreground mb-7">{favorites.length}개 등록됨</p>
 
       {favorites.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-border-strong bg-surface px-5 py-8 text-center text-muted-foreground">
-          아직 즐겨찾기한 메뉴가 없습니다. 오늘의 식단에서 하트를 눌러보세요.
-        </p>
+        <EmptyState
+          icon={Heart}
+          title="즐겨찾기한 메뉴가 없어요"
+          description="식단에서 하트를 누르면 여기 모여요"
+          action={{ href: '/', label: '오늘의 식단 보기' }}
+        />
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col">
           {favorites.map((f) => {
             if (!f.menu_items) return null
             const { main, detail } = splitMenuName(f.menu_items.name)
@@ -176,7 +181,7 @@ export default function FavoritesPage() {
             return (
               <li
                 key={f.id}
-                className="bg-surface border border-border rounded-xl px-4 py-3 flex items-center justify-between gap-3"
+                className="py-3.5 border-b border-border flex items-center justify-between gap-3"
               >
                 <div>
                   <div className="font-semibold text-sm text-foreground">{main}</div>
@@ -184,12 +189,12 @@ export default function FavoritesPage() {
                     <div className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{detail}</div>
                   )}
                   {next ? (
-                    <div className="text-xs font-semibold text-primary-hover mt-1.5 flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-current" />
+                    <div className="text-xs font-semibold text-foreground mt-1.5 flex items-center gap-1.5">
+                      <span className="w-[5px] h-[5px] rounded-full bg-foreground" />
                       다음 등장: {describeOccurrence(next.meal_date, next.meal_type, todayStr, tomorrowStr)}
                     </div>
                   ) : (
-                    <div className="text-xs text-muted-foreground mt-1.5">이번 주 예정 없음</div>
+                    <div className="text-xs text-faint mt-1.5">이번 주 예정 없음</div>
                   )}
                 </div>
                 <FavoriteButton
@@ -216,13 +221,13 @@ export default function FavoritesPage() {
             </span>
             <button
               onClick={undoRemove}
-              className="text-sm font-semibold text-star shrink-0 rounded-full px-3 py-1 hover:bg-background/10"
+              className="text-sm font-bold text-background shrink-0 rounded-full px-3 py-1 hover:bg-background/10"
             >
               실행취소
             </button>
             <div
               key={removedToast.id}
-              className="absolute bottom-0 left-0 h-0.5 w-full origin-left bg-star/70"
+              className="absolute bottom-0 left-0 h-0.5 w-full origin-left bg-background/60"
               style={{ animation: `toast-progress ${UNDO_DURATION_MS}ms linear forwards` }}
             />
           </div>

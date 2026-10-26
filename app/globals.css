@@ -1,50 +1,49 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f4ee;
+  color-scheme: light dark;
+  --background: #ffffff;
   --surface: #ffffff;
-  --surface-hover: #e8eee0;
-  --foreground: #20241f;
-  --muted-foreground: #6d7266;
-  --border: #e3e1d3;
-  --border-strong: #c7c4b0;
+  --surface-hover: #f5f6f7;
+  --foreground: #0a0b0d;
+  --muted-foreground: #5b616e;
+  --faint: #8a919e;
+  --border: #eef0f3;
+  --border-strong: #dfe1e5;
 
-  --primary: #2f5233;
-  --primary-hover: #1f3a24;
+  --primary: #0a0b0d;
+  --primary-hover: #2a2d33;
   --primary-foreground: #ffffff;
-  --accent-soft: #eef4ea;
-  --accent-soft-border: #c9d9c1;
+  --accent-soft: #f2f3f5;
+  --accent-soft-border: #eef0f3;
 
-  --success: #788b4a;
-  --danger: #c85b48;
-  --star: #e0a53d;
-
-  --live: #e0603f;
-  --social: #c94270;
+  --like: #e5484d;
+  --danger: #e5484d;
+  --success: var(--foreground);
+  --star: var(--foreground);
+  --live: var(--foreground);
+  --social: var(--like);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #14170f;
-    --surface: #1d2117;
-    --surface-hover: #242a1c;
-    --foreground: #e7e9df;
-    --muted-foreground: #9aa08f;
-    --border: #333829;
-    --border-strong: #454c37;
+    --background: #0a0b0d;
+    --surface: #0a0b0d;
+    --surface-hover: #16181b;
+    --foreground: #f5f6f7;
+    --muted-foreground: #b4b9c2;
+    --faint: #8a919e;
+    --border: #1f2125;
+    --border-strong: #2e3136;
 
-    --primary: #5cb86a;
-    --primary-hover: #7fd18c;
-    --primary-foreground: #12271a;
-    --accent-soft: #24382b;
-    --accent-soft-border: #37533f;
+    --primary: #f5f6f7;
+    --primary-hover: #d6d9de;
+    --primary-foreground: #0a0b0d;
+    --accent-soft: #1a1c20;
+    --accent-soft-border: #1f2125;
 
-    --success: #a3b86e;
-    --danger: #e08872;
-    --star: #f5b93a;
-
-    --live: #ec7a5c;
-    --social: #e2699a;
+    --like: #ff6369;
+    --danger: #ff6369;
   }
 }
 
@@ -54,6 +53,7 @@
   --color-surface-hover: var(--surface-hover);
   --color-foreground: var(--foreground);
   --color-muted-foreground: var(--muted-foreground);
+  --color-faint: var(--faint);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
 
@@ -63,6 +63,7 @@
   --color-accent-soft: var(--accent-soft);
   --color-accent-soft-border: var(--accent-soft-border);
 
+  --color-like: var(--like);
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-star: var(--star);
@@ -70,7 +71,7 @@
   --color-social: var(--social);
 
   --font-sans: var(--font-body);
-  --font-serif: var(--font-display);
+  --font-serif: var(--font-body);
 }
 
 body {
@@ -81,8 +82,8 @@ body {
 }
 
 ::selection {
-  background: var(--accent-soft);
-  color: var(--primary-hover);
+  background: var(--foreground);
+  color: var(--background);
 }
 
 @keyframes toast-progress {
@@ -92,4 +93,18 @@ body {
   to {
     transform: scaleX(0);
   }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 1.6s ease-in-out infinite;
 }

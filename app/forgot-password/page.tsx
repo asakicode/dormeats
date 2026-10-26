@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
   if (done) {
     return (
       <div className="max-w-sm mx-auto px-6 py-16 text-center">
-        <h1 className="font-serif text-2xl font-bold tracking-tight mb-3">이메일을 확인해주세요</h1>
+        <h1 className="text-2xl font-bold tracking-tight mb-3">이메일을 확인해주세요</h1>
         <p className="text-sm text-muted-foreground mb-7">
           {email}로 비밀번호 재설정 링크를 보냈어요. 메일 속 링크를 눌러 새 비밀번호를 설정해주세요.
         </p>
@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="max-w-sm mx-auto px-6 py-20">
-      <h1 className="font-serif text-3xl font-bold tracking-tight mb-1.5">비밀번호 찾기</h1>
+      <h1 className="text-3xl font-bold tracking-tight mb-1.5">비밀번호 찾기</h1>
       <p className="text-sm text-muted-foreground mb-9">가입한 이메일을 입력하면 재설정 링크를 보내드려요</p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

@@ -82,9 +82,9 @@ export default function CommentSection({ postId }: { postId: string }) {
       <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
         댓글 {comments.length}
       </h2>
-      <ul className="space-y-2.5 mb-5">
+      <ul className="mb-5">
         {comments.map((c) => (
-          <li key={c.id} className="rounded-xl border border-border bg-surface p-3.5 text-sm">
+          <li key={c.id} className="py-3.5 border-b border-border text-sm">
             <div className="flex justify-between items-start">
               <div>
                 <span className="font-medium">

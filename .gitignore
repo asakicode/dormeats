@@ -42,3 +42,6 @@ next-env.d.ts
 
 # page overview script output
 /dev-overview/
+
+# superpowers scratch
+/.superpowers/

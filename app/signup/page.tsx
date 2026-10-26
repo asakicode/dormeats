@@ -48,7 +48,7 @@ export default function SignupPage() {
   if (done) {
     return (
       <div className="max-w-sm mx-auto px-6 py-16 text-center">
-        <h1 className="font-serif text-2xl font-bold tracking-tight mb-3">이메일을 확인해주세요</h1>
+        <h1 className="text-2xl font-bold tracking-tight mb-3">이메일을 확인해주세요</h1>
         <p className="text-sm text-muted-foreground mb-7">
           {email}로 인증 메일을 보냈어요. 메일 속 링크를 눌러 인증을 완료하면 로그인할 수 있어요.
         </p>
@@ -62,15 +62,15 @@ export default function SignupPage() {
   return (
     <div className="max-w-sm mx-auto px-6 py-16">
       <div className="mb-8">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft border border-accent-soft-border px-3 py-1 text-xs font-semibold text-primary-hover mb-4">
-          🍚 도봉학사 식단 커뮤니티
+        <span className="block text-xs font-semibold text-muted-foreground mb-3">
+          도봉학사 식단 커뮤니티
         </span>
-        <h1 className="font-serif text-2xl font-bold tracking-tight">회원가입</h1>
+        <h1 className="text-2xl font-bold tracking-tight">회원가입</h1>
         <p className="text-sm text-muted-foreground mt-1">몇 가지 정보만 입력하면 바로 시작할 수 있어요</p>
       </div>
       <form
         onSubmit={handleSignup}
-        className="space-y-4 rounded-2xl border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(118,85,42,0.04)]"
+        className="space-y-4"
       >
         <div>
           <label className="block text-sm font-medium mb-1.5">이메일</label>

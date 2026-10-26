@@ -52,7 +52,7 @@ export default function ResetPasswordPage() {
   if (!ready) {
     return (
       <div className="max-w-sm mx-auto px-6 py-16 text-center">
-        <h1 className="font-serif text-2xl font-bold tracking-tight mb-3">링크를 확인하는 중이에요</h1>
+        <h1 className="text-2xl font-bold tracking-tight mb-3">링크를 확인하는 중이에요</h1>
         <p className="text-sm text-muted-foreground">
           이 페이지는 이메일로 받은 비밀번호 재설정 링크를 통해서만 열 수 있어요. 잠시만 기다려주세요.
         </p>
@@ -62,7 +62,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="max-w-sm mx-auto px-6 py-20">
-      <h1 className="font-serif text-3xl font-bold tracking-tight mb-1.5">새 비밀번호 설정</h1>
+      <h1 className="text-3xl font-bold tracking-tight mb-1.5">새 비밀번호 설정</h1>
       <p className="text-sm text-muted-foreground mb-9">새로 사용할 비밀번호를 입력해주세요</p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

@@ -81,7 +81,7 @@ export default function PostDetailPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-10">
-      <h1 className="font-serif text-2xl font-bold tracking-tight mb-2">{post.title}</h1>
+      <h1 className="text-2xl font-bold tracking-tight mb-2">{post.title}</h1>
       <p className="text-sm text-muted-foreground mb-6">
         {post.is_anonymous ? '익명' : post.author_nickname ?? '알 수 없음'}
         <span className="mx-1.5 text-border-strong">·</span>

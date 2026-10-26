@@ -38,7 +38,7 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-sm mx-auto px-6 py-20">
-      <h1 className="font-serif text-3xl font-bold tracking-tight mb-1.5">다시 오셨네요</h1>
+      <h1 className="text-3xl font-bold tracking-tight mb-1.5">다시 오셨네요</h1>
       <p className="text-sm text-muted-foreground mb-9">도봉학사 계정으로 로그인하세요</p>
       <form onSubmit={handleLogin} className="space-y-4">
         <div>

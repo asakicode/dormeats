@@ -97,3 +97,33 @@ export function formatRelativeTime(dateString: string): string {
   const [, month, day] = postDateStr.split('-')
   return `${month}/${day}`
 }
+function parseDateStr(dateStr: string): Date {
+  return new Date(`${dateStr}T00:00:00`)
+}
+
+export function getWeekDates(dateStr: string): string[] {
+  const monday = getMondayOfWeek(parseDateStr(dateStr))
+  const dates: string[] = []
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    dates.push(formatDate(d))
+  }
+  return dates
+}
+
+export function getRelativeDayLabel(dateStr: string, todayStr: string): '오늘' | '내일' | '모레' | '어제' | '' {
+  const diff = Math.round((parseDateStr(dateStr).getTime() - parseDateStr(todayStr).getTime()) / 86400000)
+  if (diff === 0) return '오늘'
+  if (diff === 1) return '내일'
+  if (diff === 2) return '모레'
+  if (diff === -1) return '어제'
+  return ''
+}
+
+const KOREAN_WEEKDAYS = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
+
+export function formatKoreanDate(dateStr: string): string {
+  const d = parseDateStr(dateStr)
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 ${KOREAN_WEEKDAYS[d.getDay()]}`
+}

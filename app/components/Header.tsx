@@ -55,8 +55,8 @@ export default function Header() {
     <header className="sticky top-0 z-20 border-b border-border bg-surface/90 backdrop-blur supports-[backdrop-filter]:bg-surface/75">
       <div className="max-w-xl mx-auto px-5 py-3 flex justify-between items-center gap-4">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <Soup size={20} className="text-primary" strokeWidth={2.2} />
-          <span className="font-serif text-lg font-bold tracking-tight text-primary">
+          <Soup size={20} className="text-foreground" strokeWidth={2.2} />
+          <span className="text-lg font-extrabold tracking-tight text-foreground">
             DormEats
           </span>
           <span className="text-xs text-muted-foreground">도봉학사</span>

@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { Heart } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function LikeButton({
@@ -74,11 +75,12 @@ export default function LikeButton({
       onClick={toggleLike}
       className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium tabular-nums transition-colors ${
         liked
-          ? 'border-social bg-social/10 text-social'
+          ? 'border-like/40 text-like'
           : 'border-border text-muted-foreground hover:border-border-strong hover:bg-surface-hover'
       }`}
     >
-      {liked ? '❤️' : '🤍'} {count}
+      <Heart size={16} className={liked ? 'fill-like text-like' : 'text-muted-foreground'} />
+      {count}
     </button>
   )
 }

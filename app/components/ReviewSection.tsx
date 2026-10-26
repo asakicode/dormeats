@@ -85,7 +85,7 @@ export default function ReviewSection({ mealId }: { mealId: string }) {
         <p className="text-sm text-muted-foreground">
           {avgRating ? (
             <>
-              <Star size={14} className="inline fill-star text-star -mt-0.5" />
+              <Star size={14} className="inline fill-foreground text-foreground -mt-0.5" />
               <span className="font-semibold text-foreground ml-1">{avgRating}</span>
               <span className="ml-1">({reviews.length}개 후기)</span>
             </>
@@ -95,14 +95,14 @@ export default function ReviewSection({ mealId }: { mealId: string }) {
         </p>
         <button
           onClick={() => setOpen(!open)}
-          className="text-sm font-medium text-primary-hover hover:underline"
+          className="text-sm font-semibold text-foreground hover:underline"
         >
           {open ? '닫기' : '후기 작성'}
         </button>
       </div>
 
       {open && (
-        <form onSubmit={handleSubmit} className="mt-3 space-y-2.5 rounded-xl border border-border bg-surface p-3.5">
+        <form onSubmit={handleSubmit} className="mt-3 pt-3 border-t border-border space-y-2.5">
           <div className="flex gap-1">
             {[1, 2, 3, 4, 5].map((n) => (
               <button
@@ -113,7 +113,7 @@ export default function ReviewSection({ mealId }: { mealId: string }) {
               >
                 <Star
                   size={22}
-                  className={n <= rating ? 'fill-star text-star' : 'text-border-strong'}
+                  className={n <= rating ? 'fill-foreground text-foreground' : 'text-border-strong'}
                 />
               </button>
             ))}
@@ -137,10 +137,10 @@ export default function ReviewSection({ mealId }: { mealId: string }) {
       {reviews.length > 0 && (
         <ul className="mt-3 space-y-2.5">
           {reviews.map((r) => (
-            <li key={r.id} className="text-sm rounded-xl border border-border bg-surface p-3">
+            <li key={r.id} className="text-sm pt-3 border-t border-border">
               <span className="inline-flex items-center gap-0.5">
                 {Array.from({ length: r.rating }).map((_, i) => (
-                  <Star key={i} size={12} className="fill-star text-star" />
+                  <Star key={i} size={12} className="fill-foreground text-foreground" />
                 ))}
               </span>
               <span className="text-muted-foreground ml-2">

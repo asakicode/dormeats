@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { Heart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { cleanMenuName } from '@/lib/menu'
@@ -114,47 +115,43 @@ export default function MyPage() {
 
   return (
     <div className="max-w-xl mx-auto px-6 py-10">
-      {/* 프로필 카드 */}
-      <div className="rounded-2xl border border-accent-soft-border bg-accent-soft p-6 mb-6">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-serif font-bold shrink-0">
-            {nickname.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <h1 className="font-serif text-xl font-bold">{nickname}</h1>
-            <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-surface text-primary-hover border border-accent-soft-border font-medium">
-              {dorm}
-            </span>
-          </div>
+      {/* 프로필 */}
+      <div className="flex items-center gap-3.5 mb-6">
+        <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold shrink-0">
+          {nickname.charAt(0).toUpperCase()}
         </div>
+        <div>
+          <h1 className="text-lg font-bold">{nickname}</h1>
+          <p className="text-[13px] text-muted-foreground">{dorm}</p>
+        </div>
+      </div>
 
-        {/* 통계 */}
-        <div className="grid grid-cols-3 gap-2 mt-5 pt-5 border-t border-accent-soft-border">
-          <div className="text-center">
-            <p className="font-serif text-lg font-bold">{posts.length}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">작성한 글</p>
-          </div>
-          <div className="text-center">
-            <p className="font-serif text-lg font-bold">{totalLikes}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">좋아요 받은 수</p>
-          </div>
-          <div className="text-center">
-            <p className="font-serif text-lg font-bold">{reviewCount}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">후기 작성</p>
-          </div>
+      {/* 통계 */}
+      <div className="grid grid-cols-3 py-4 border-y border-border mb-5">
+        <div>
+          <p className="text-[22px] font-bold tabular-nums">{posts.length}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">작성한 글</p>
+        </div>
+        <div>
+          <p className="text-[22px] font-bold tabular-nums">{totalLikes}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">좋아요 받은 수</p>
+        </div>
+        <div>
+          <p className="text-[22px] font-bold tabular-nums">{reviewCount}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">후기 작성</p>
         </div>
       </div>
 
       {/* 탭 */}
-      <div className="flex gap-2 mb-5">
+      <div className="flex border-b border-border mb-2">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-2.5 text-sm transition-colors ${
               activeTab === tab.key
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-surface border border-border text-muted-foreground hover:text-foreground'
+                ? 'text-foreground font-bold border-b-2 border-foreground -mb-px'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tab.label}
@@ -168,22 +165,23 @@ export default function MyPage() {
           {posts.length === 0 ? (
             <p className="text-muted-foreground text-sm">아직 작성한 글이 없습니다.</p>
           ) : (
-            <ul className="space-y-2">
+            <ul>
               {posts.map((post) => (
                 <li key={post.id}>
                   <Link
                     href={boardLink(post.board_type, post.id)}
-                    className="block rounded-2xl border border-border bg-surface p-4 hover:border-border-strong transition-colors"
+                    className="block py-3.5 border-b border-border hover:bg-surface-hover transition-colors"
                   >
                     <div className="flex justify-between items-center">
                       <span>
-                        <span className="text-xs text-muted-foreground mr-2">
+                        <span className="text-xs font-bold text-muted-foreground mr-2">
                           [{BOARD_LABEL[post.board_type] ?? post.board_type}]
                         </span>
                         {post.title}
                       </span>
-                      <span className="text-sm text-muted-foreground tabular-nums">
-                        ❤️ {post.like_count}
+                      <span className="flex items-center gap-1 text-sm text-muted-foreground tabular-nums">
+                        <Heart className="w-3.5 h-3.5 fill-like text-like" />
+                        {post.like_count}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -202,12 +200,12 @@ export default function MyPage() {
           {comments.length === 0 ? (
             <p className="text-muted-foreground text-sm">아직 작성한 댓글이 없습니다.</p>
           ) : (
-            <ul className="space-y-2">
+            <ul>
               {comments.map((c) => (
                 <li key={c.id}>
                   <Link
                     href={boardLink(c.post_board_type ?? 'wish', c.post_id)}
-                    className="block rounded-2xl border border-border bg-surface p-4 hover:border-border-strong transition-colors"
+                    className="block py-3.5 border-b border-border hover:bg-surface-hover transition-colors"
                   >
                     <p className="text-xs text-muted-foreground">{c.post_title ?? '삭제된 글'}</p>
                     <p className="text-sm mt-1">{c.content}</p>
@@ -231,9 +229,9 @@ export default function MyPage() {
               {favorites.map((f) => (
                 <li
                   key={f.id}
-                  className="border rounded-full px-3.5 py-1.5 text-sm bg-danger/10 border-danger/20 text-danger font-medium"
+                  className="rounded-full px-3.5 py-1.5 text-sm bg-accent-soft text-foreground font-medium"
                 >
-                  ❤️ {f.menu_items ? cleanMenuName(f.menu_items.name) : ''}
+                  {f.menu_items ? cleanMenuName(f.menu_items.name) : ''}
                 </li>
               ))}
             </ul>
