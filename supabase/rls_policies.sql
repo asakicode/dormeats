@@ -246,6 +246,16 @@ create policy "menu_items_select_all"
   to anon, authenticated
   using (true);
 
+alter table menu_groups enable row level security;
+
+revoke all on menu_groups from anon, authenticated;
+grant select on menu_groups to anon, authenticated;
+
+create policy "menu_groups_select_all"
+  on menu_groups for select
+  to anon, authenticated
+  using (true);
+
 -- ============================================================
 -- 익명 작성자 노출 방지
 -- posts.user_id / comments.user_id / notifications.actor_id는
